@@ -5,3 +5,15 @@ body, html {
   margin: 0;
   padding: 0;
 }
+
+.mat-elevation-z1,
+.mat-elevation-z2,
+.mat-elevation-z3,
+.mat-elevation-z4,
+.mat-elevation-z5,
+.mat-elevation-z6,
+.mat-elevation-z7,
+.mat-elevation-z8 {
+  position: relative;
+  z-index: 2;
+}
