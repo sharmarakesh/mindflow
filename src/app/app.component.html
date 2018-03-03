@@ -1,2 +1,4 @@
-<app-toolbar></app-toolbar>
-<router-outlet></router-outlet>
+<app-toolbar (sideNavToggle)="onSideNavToggle($event)"></app-toolbar>
+<app-sidenav [fixedInViewport]="sideNavFixed" [mode]="sideNavMode" [open]="sideNavOpen">
+    <router-outlet></router-outlet>
+</app-sidenav>
