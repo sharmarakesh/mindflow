@@ -8,3 +8,19 @@ svg {
   height: 100%;
   width: 100%;
 }
+
+circle {
+  pointer-events: all;
+  stroke: none;
+  stroke-width: 40px;
+}
+
+.link {
+  stroke: #fff;
+  stroke-width: 2px;
+}
+
+.node text {
+  pointer-events: none;
+  font: 10px sans-serif;
+}
