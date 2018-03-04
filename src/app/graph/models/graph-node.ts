@@ -1,7 +1,13 @@
 export class GraphNode {
   constructor(
-    public id: string,
+    public id: string | number,
     public x: number,
-    public y: number
+    public y: number,
+    public r: number,
+    public color: string,
+    public name: string,
+    public fx?: number,
+    public fy?: number,
+    public data?: any
   ) {}
 }

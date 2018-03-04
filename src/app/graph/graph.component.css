@@ -1,4 +1,10 @@
 .flowChart {
+  background-color: rgb(4, 11, 94);
   height: calc(100vh - 64px);
+  width: 100%;
+}
+
+svg {
+  height: 100%;
   width: 100%;
 }

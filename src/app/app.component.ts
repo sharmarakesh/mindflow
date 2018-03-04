@@ -34,7 +34,7 @@ export class AppComponent implements OnDestroy {
 
   private setSideNav(): void {
     this.sideNavFixed = this.mobileQuery.matches;
-    this.sideNavOpen = !this.mobileQuery.matches;
     this.sideNavMode = this.mobileQuery.matches ? 'over' : 'side';
+    this.sideNavOpen = !this.mobileQuery.matches;
   }
 }
