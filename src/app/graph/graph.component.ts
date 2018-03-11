@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { AfterViewInit, Component, ViewChild } from '@angular/core';
+import { MatMenuTrigger } from '@angular/material'
 
 import * as d3 from 'd3';
 
@@ -24,15 +25,27 @@ const NODES: GraphNode[] = [
   styleUrls: ['./graph.component.css'],
   templateUrl: './graph.component.html',
 })
-export class GraphComponent implements OnInit {
+export class GraphComponent implements AfterViewInit {
+  @ViewChild(MatMenuTrigger) private menuTrigger: MatMenuTrigger;
+  private contextMenu: d3.Selection<d3.BaseType, {}, HTMLElement, any>;
+  private contextMenuBtn: d3.Selection<d3.BaseType, {}, HTMLElement, any>;
   private link: d3.Selection<d3.BaseType, d3.Group, d3.BaseType, any>;
   private node: d3.Selection<d3.BaseType, d3.Group, d3.BaseType, any>;
   private simulation: d3.Simulation<GraphNode, GraphLink>;
   private svg: d3.Selection<d3.BaseType, {}, HTMLElement, any>;
   constructor(private graphSvc: GraphService) { }
 
-  ngOnInit(): void {
+  public closeMenu(): void {
+    this.menuTrigger.closeMenu();
+  }
 
+  public onMenuClosed(): void {
+    this.contextMenuBtn.style('display', 'none');
+  }
+
+  ngAfterViewInit(): void {
+    this.contextMenu = d3.select('#contextMenu');
+    this.contextMenuBtn = d3.select('#contextMenuBtn');
     this.svg = d3.select('.flowChart')
       .append('svg')
       .attr('width', '100%')
@@ -40,6 +53,15 @@ export class GraphComponent implements OnInit {
       .append('g')
       .attr('width', '100%')
       .attr('height', '100%')
+      .on('contextmenu', () => {
+        // https://stackblitz.com/edit/angular-odciv8?file=app%2Fmenu-icons-example.ts
+        d3.event.preventDefault();
+        this.contextMenu.style('left', `${d3.event.clientX}px`);
+        this.contextMenu.style('top', `${d3.event.clientY}px`);
+        this.contextMenuBtn.style('left', `${d3.event.clientX}px`);
+        this.contextMenuBtn.style('top', `${d3.event.clientY}px`);
+        this.menuTrigger.toggleMenu();
+      })
       .call(d3.zoom()
         .on('zoom', () => {
           this.svg.attr('transform', `translate(${d3.event.transform.x}, ${d3.event.transform.y}) scale(${d3.event.transform.k})`);

@@ -1,7 +1,15 @@
 .flowChart {
   background-color: rgb(4, 11, 94);
   height: calc(100vh - 64px);
+  position: relative;
   width: 100%;
+}
+
+#contextMenuBtn, #contextMenu {
+  display: none;
+  left: 0;
+  right: 0;
+  position: absolute;
 }
 
 .node text {
