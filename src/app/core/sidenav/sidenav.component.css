@@ -1,3 +1,7 @@
 mat-sidenav {
     width: 256px;
 }
+
+mat-sidenav-content {
+    overflow: hidden!important;
+  }
