@@ -1,12 +1,17 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
-import { GraphComponent } from './graph/graph.component';
+import { FlowComponent } from './flow/flow.component';
 
 const appRoutes: Routes = [
   {
+    path: 'flow',
+    component: FlowComponent
+  },
+  {
     path: '',
-    component: GraphComponent
+    redirectTo: '/register',
+    pathMatch: 'full'
   }
 ]
 
@@ -14,7 +19,7 @@ const appRoutes: Routes = [
   imports: [
     RouterModule.forRoot(
       appRoutes,
-      { enableTracing: true }
+      { enableTracing: false }
     )
   ],
   exports: [

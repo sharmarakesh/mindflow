@@ -1,4 +1,7 @@
-<app-toolbar (sideNavToggle)="onSideNavToggle($event)"></app-toolbar>
-<app-sidenav [fixedInViewport]="sideNavFixed" [mode]="sideNavMode" [open]="sideNavOpen">
+<app-toolbar *ngIf="!isAdmin" (sideNavToggle)="onSideNavToggle($event)"></app-toolbar>
+<app-sidenav *ngIf="!isAdmin" [fixedInViewport]="sideNavFixed" [mode]="sideNavMode" [open]="sideNavOpen">
     <router-outlet></router-outlet>
 </app-sidenav>
+<div *ngIf="isAdmin">
+    <router-outlet></router-outlet>
+</div>

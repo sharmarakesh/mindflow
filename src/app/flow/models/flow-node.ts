@@ -1,4 +1,4 @@
-export class GraphNode {
+export class FlowNode {
   constructor(
     public id: string | number,
     public x: number,

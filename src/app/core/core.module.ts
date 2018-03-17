@@ -1,6 +1,7 @@
 import { LayoutModule } from '@angular/cdk/layout';
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import {
   MatAutocompleteModule,
   MatButtonModule,
@@ -37,17 +38,21 @@ import {
 } from '@angular/material';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
-import { ToolbarComponent } from './toolbar/toolbar.component';
+import { NotificationService } from './notification.service';
 import { SidenavComponent } from './sidenav/sidenav.component';
+import { ToolbarComponent } from './toolbar/toolbar.component';
+import { LoadingDialogComponent } from './loading-dialog/loading-dialog.component';
 
 @NgModule({
   declarations: [
     SidenavComponent,
-    ToolbarComponent
+    ToolbarComponent,
+    LoadingDialogComponent
   ],
   exports: [
     BrowserAnimationsModule,
     CommonModule,
+    FormsModule,
     LayoutModule,
     MatAutocompleteModule,
     MatButtonModule,
@@ -79,12 +84,14 @@ import { SidenavComponent } from './sidenav/sidenav.component';
     MatTableModule,
     MatTabsModule,
     MatTooltipModule,
+    ReactiveFormsModule,
     SidenavComponent,
     ToolbarComponent
   ],
   imports: [
     BrowserAnimationsModule,
     CommonModule,
+    FormsModule,
     LayoutModule,
     MatAutocompleteModule,
     MatButtonModule,
@@ -117,8 +124,11 @@ import { SidenavComponent } from './sidenav/sidenav.component';
     MatTableModule,
     MatTabsModule,
     MatToolbarModule,
-    MatTooltipModule
+    MatTooltipModule,
+    ReactiveFormsModule
   ],
-  providers: []
+  providers: [
+    NotificationService
+  ]
 })
 export class CoreModule { }

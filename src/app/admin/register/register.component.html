@@ -1,0 +1,9 @@
+<div class="auth-page">
+  <form class="auth-form" [formGroup]="registrationForm" (ngSubmit)="register()" novalidate>
+    <img class="auth-form__image" src="assets/icons/firebase_28dp.png" />
+    <h1 class="auth-form__title">Mindflow RT</h1>
+    <mat-form-field class="auth-form__item">
+      <input matInput placeholder="Favorite food" value="Sushi">
+    </mat-form-field>
+  </form>
+</div>
