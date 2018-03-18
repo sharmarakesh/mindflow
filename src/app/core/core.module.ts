@@ -34,19 +34,22 @@ import {
   MatTableModule,
   MatTabsModule,
   MatToolbarModule,
-  MatTooltipModule
+  MatTooltipModule,
 } from '@angular/material';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
+import { LoadingDialogComponent } from './loading-dialog/loading-dialog.component';
 import { NotificationService } from './notification.service';
 import { SidenavComponent } from './sidenav/sidenav.component';
 import { ToolbarComponent } from './toolbar/toolbar.component';
-import { LoadingDialogComponent } from './loading-dialog/loading-dialog.component';
 
 @NgModule({
   declarations: [
     SidenavComponent,
     ToolbarComponent,
+    LoadingDialogComponent
+  ],
+  entryComponents: [
     LoadingDialogComponent
   ],
   exports: [

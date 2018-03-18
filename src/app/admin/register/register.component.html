@@ -3,7 +3,24 @@
     <img class="auth-form__image" src="assets/icons/firebase_28dp.png" />
     <h1 class="auth-form__title">Mindflow RT</h1>
     <mat-form-field class="auth-form__item">
-      <input matInput placeholder="Favorite food" value="Sushi">
+      <input formControlName="name" matInput placeholder="Name*">
+      <mat-error *ngIf="registrationForm.controls.name.dirty && registrationForm.controls.name.errors?.required">
+        <mat-icon>warning</mat-icon> Your name is
+        <strong>required</strong>
+      </mat-error>
+      <mat-error *ngIf="registrationForm.invalid && registrationForm.controls.name.touched && registrationForm.controls.name.errors?.pattern">
+        <mat-icon>warning</mat-icon> Please enter a
+        <strong>valid name</strong>
+      </mat-error>
+    </mat-form-field>
+    <mat-form-field class="auth-form__item">
+      <input formControlName="email" matInput placeholder="Email*">
+    </mat-form-field>
+    <mat-form-field class="auth-form__item">
+      <input formControlName="password" matInput placeholder="Password*">
+    </mat-form-field>
+    <mat-form-field class="auth-form__item">
+      <input formControlName="passwordConfirm" matInput placeholder="Repeat password*">
     </mat-form-field>
   </form>
 </div>

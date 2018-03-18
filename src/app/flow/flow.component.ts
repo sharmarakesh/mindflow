@@ -5,7 +5,7 @@ import * as d3 from 'd3';
 
 import { FlowLink, FlowNode } from './models';
 import { FlowService } from './flow.service';
-import { DragBehavior } from 'd3';
+import { NotificationService } from '../core/notification.service';
 
 const LINKS: FlowLink[] = [
   new FlowLink(0, 1, 50, 0.1),
@@ -33,7 +33,7 @@ export class FlowComponent implements AfterViewInit {
   private node: d3.Selection<d3.BaseType, d3.Group, d3.BaseType, any>;
   private simulation: d3.Simulation<FlowNode, FlowLink>;
   private svg: d3.Selection<d3.BaseType, {}, HTMLElement, any>;
-  constructor(private flowSvc: FlowService) { }
+  constructor(private flowSvc: FlowService, private notifySvc: NotificationService) { }
 
   public closeMenu(): void {
     this.menuTrigger.closeMenu();
@@ -89,6 +89,8 @@ export class FlowComponent implements AfterViewInit {
 
       this.node.attr('transform', (d: FlowNode) => `translate(${d.x},${d.y})`);
     });
+
+    setTimeout(() => this.notifySvc.showError('Error'), 1000)
   }
 
   private setupForceLayout(): void {

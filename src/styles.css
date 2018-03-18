@@ -2,8 +2,76 @@
 @import "~@angular/material/prebuilt-themes/deeppurple-amber.css";
 
 body, html {
+  font-family: Roboto, 'Helvetica Neue', sans-serif;
   margin: 0;
   padding: 0;
+}
+
+.auth-page {
+  align-items: center;
+  background-color: rgb(4, 11, 94);
+  color: rgb(255, 255, 255);
+  display: flex;
+  height: 100vh;
+  justify-content: center;
+  width: 100vw;
+}
+
+.auth-form {
+  background: none;
+  max-width: 30rem;
+  width: 100%;
+}
+
+.auth-form__item {
+  width: 100%;
+}
+
+.auth-form__item .mat-form-field-label {
+  color: rgb(255, 255, 255);
+}
+
+.auth-form__item .mat-input-underline {
+  background-color: rgb(255, 255, 255);
+}
+
+.auth-form__item input {
+  color: rgb(255, 255, 255);
+  text-align: center;
+}
+
+.auth-form__item input::placeholder {
+  color: rgb(255, 255, 255);
+}
+
+.auth-form__item input::-moz-placeholder {
+  color: rgb(255, 255, 255);
+}
+
+.auth-form__item input::-webkit-input-placeholder {
+  color: rgb(255, 255, 255);
+}
+
+.auth-form__image {
+  display: block;
+  margin: auto;
+}
+
+.auth-form__links {
+  margin-top: 3rem;
+  text-align: center;
+}
+
+.auth-form__links a {
+  color: rgb(255, 255, 255);
+  font-weight: bold;
+  cursor: pointer;
+  outline: none;
+  text-decoration: none;
+}
+
+.auth-form__title {
+  text-align: center;
 }
 
 .mat-elevation-z1,
@@ -16,4 +84,12 @@ body, html {
 .mat-elevation-z8 {
   position: relative;
   z-index: 2;
+}
+
+.snackbar--error {
+  color: #ff0000;
+}
+
+.snackbar--info {
+  color: #ffff00;
 }
