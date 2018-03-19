@@ -3,8 +3,8 @@ import { NgModule } from '@angular/core';
 import { AdminRoutingModule } from './admin-routing.module';
 import { AuthService } from './auth.service';
 import { CoreModule } from '../core/core.module';
-import { ForgotPasswordComponent } from './forgot-password/forgot-password.component';
 import { LoginComponent } from './login/login.component';
+import { PasswordResetComponent } from './password-reset/password-reset.component';
 import { RegisterComponent } from './register/register.component';
 
 @NgModule({
@@ -13,8 +13,8 @@ import { RegisterComponent } from './register/register.component';
     CoreModule
   ],
   declarations: [
-    ForgotPasswordComponent,
     LoginComponent,
+    PasswordResetComponent,
     RegisterComponent
   ],
   exports: [AdminRoutingModule],

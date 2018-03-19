@@ -1,26 +1,58 @@
 <div class="auth-page">
   <form class="auth-form" [formGroup]="registrationForm" (ngSubmit)="register()" novalidate>
     <img class="auth-form__image" src="assets/icons/firebase_28dp.png" />
-    <h1 class="auth-form__title">Mindflow RT</h1>
+    <h1 class="auth-form__title mat-display-2">Mindflow RT</h1>
     <mat-form-field class="auth-form__item">
-      <input formControlName="name" matInput placeholder="Name*">
-      <mat-error *ngIf="registrationForm.controls.name.dirty && registrationForm.controls.name.errors?.required">
+      <input formControlName="name" matInput placeholder="Name*" type="text">
+      <mat-error *ngIf="registrationForm.controls.name.touched && registrationForm.controls.name.errors?.required">
         <mat-icon>warning</mat-icon> Your name is
         <strong>required</strong>
       </mat-error>
-      <mat-error *ngIf="registrationForm.invalid && registrationForm.controls.name.touched && registrationForm.controls.name.errors?.pattern">
+      <mat-error *ngIf="registrationForm.invalid && registrationForm.controls.name.dirty && registrationForm.controls.name.errors?.pattern">
         <mat-icon>warning</mat-icon> Please enter a
         <strong>valid name</strong>
       </mat-error>
     </mat-form-field>
     <mat-form-field class="auth-form__item">
-      <input formControlName="email" matInput placeholder="Email*">
+      <input formControlName="email" matInput placeholder="Email*" type="email">
+      <mat-error *ngIf="registrationForm.controls.email.touched && registrationForm.controls.email.errors?.required">
+        <mat-icon>warning</mat-icon> Your email is
+        <strong>required</strong>
+      </mat-error>
+      <mat-error *ngIf="registrationForm.invalid && registrationForm.controls.email.dirty && registrationForm.controls.email.errors?.email">
+        <mat-icon>warning</mat-icon> Please enter a
+        <strong>valid email address</strong>
+      </mat-error>
     </mat-form-field>
     <mat-form-field class="auth-form__item">
-      <input formControlName="password" matInput placeholder="Password*">
+      <input formControlName="password" matInput placeholder="Password*" type="password">
+      <mat-error *ngIf="registrationForm.controls.password.touched && registrationForm.controls.password.errors?.required">
+        <mat-icon>warning</mat-icon> Password is
+        <strong>required</strong>
+      </mat-error>
+      <mat-error *ngIf="registrationForm.invalid && registrationForm.controls.password.dirty && registrationForm.controls.password.errors?.minlength">
+        <mat-icon>warning</mat-icon> Password must be at least
+        <strong>8 characters long</strong>
+      </mat-error>
     </mat-form-field>
     <mat-form-field class="auth-form__item">
-      <input formControlName="passwordConfirm" matInput placeholder="Repeat password*">
+      <input formControlName="passwordConfirm" matInput placeholder="Repeat password*" type="password">
+      <mat-error *ngIf="registrationForm.controls.passwordConfirm.touched && registrationForm.controls.passwordConfirm.errors?.required">
+        <mat-icon>warning</mat-icon> Password confirmation is
+        <strong>required</strong>
+      </mat-error>
+      <mat-error *ngIf="registrationForm.invalid && registrationForm.controls.passwordConfirm.dirty && registrationForm.controls.passwordConfirm.errors?.equalTo">
+        <mat-icon>warning</mat-icon> Passwords
+        <strong>don't match</strong>
+      </mat-error>
     </mat-form-field>
+    <br>
+    <button class="auth-form__submit" color="secondary" [disabled]="registrationForm.invalid" mat-button mat-stroked-button type="submit">
+      <span>Sign up</span>
+    </button>
+    <div class="auth-form__links mat-body">
+      Already have an account?
+      <a color="primary" (click)="login()">Log in</a>
+    </div>
   </form>
 </div>

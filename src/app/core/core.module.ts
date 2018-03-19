@@ -38,7 +38,9 @@ import {
 } from '@angular/material';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
+import { AuthGuard } from './auth-guard.service';
 import { LoadingDialogComponent } from './loading-dialog/loading-dialog.component';
+import { NotificationDialogComponent } from './notification-dialog/notification-dialog.component';
 import { NotificationService } from './notification.service';
 import { SidenavComponent } from './sidenav/sidenav.component';
 import { ToolbarComponent } from './toolbar/toolbar.component';
@@ -47,10 +49,12 @@ import { ToolbarComponent } from './toolbar/toolbar.component';
   declarations: [
     SidenavComponent,
     ToolbarComponent,
-    LoadingDialogComponent
+    LoadingDialogComponent,
+    NotificationDialogComponent
   ],
   entryComponents: [
-    LoadingDialogComponent
+    LoadingDialogComponent,
+    NotificationDialogComponent
   ],
   exports: [
     BrowserAnimationsModule,
@@ -131,6 +135,7 @@ import { ToolbarComponent } from './toolbar/toolbar.component';
     ReactiveFormsModule
   ],
   providers: [
+    AuthGuard,
     NotificationService
   ]
 })

@@ -1,12 +1,19 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
+import { AuthGuard } from './core/auth-guard.service';
 import { FlowComponent } from './flow/flow.component';
 
 const appRoutes: Routes = [
   {
     path: 'flow',
-    component: FlowComponent
+    canActivate: [AuthGuard],
+    children: [
+      {
+        path: '',
+        component: FlowComponent
+      }
+    ]
   },
   {
     path: '',

@@ -1,4 +1,5 @@
-import { AfterViewInit, Component, ViewChild } from '@angular/core';
+import { MediaMatcher } from '@angular/cdk/layout';
+import { AfterViewInit, ChangeDetectorRef, Component, ViewChild } from '@angular/core';
 import { MatMenuTrigger } from '@angular/material'
 
 import * as d3 from 'd3';
@@ -26,14 +27,32 @@ const NODES: FlowNode[] = [
   templateUrl: './flow.component.html',
 })
 export class FlowComponent implements AfterViewInit {
-  @ViewChild(MatMenuTrigger) private menuTrigger: MatMenuTrigger;
+  public mobileQuery: MediaQueryList;
   private contextMenu: d3.Selection<d3.BaseType, {}, HTMLElement, any>;
   private contextMenuBtn: d3.Selection<d3.BaseType, {}, HTMLElement, any>;
   private link: d3.Selection<d3.BaseType, d3.Group, d3.BaseType, any>;
+  @ViewChild(MatMenuTrigger) private menuTrigger: MatMenuTrigger;
+  private mobileQueryListener: () => void;
   private node: d3.Selection<d3.BaseType, d3.Group, d3.BaseType, any>;
   private simulation: d3.Simulation<FlowNode, FlowLink>;
   private svg: d3.Selection<d3.BaseType, {}, HTMLElement, any>;
-  constructor(private flowSvc: FlowService, private notifySvc: NotificationService) { }
+  public sideNavFixed: boolean;
+  public sideNavMode: string;
+  public sideNavOpen: boolean;
+  constructor(
+    private changeDetectorRef: ChangeDetectorRef,
+    private flowSvc: FlowService,
+    private media: MediaMatcher,
+    private notifySvc: NotificationService
+  ) {
+    this.mobileQueryListener = () => {
+      this.setSideNav();
+      this.changeDetectorRef.detectChanges();
+    };
+    this.mobileQuery = this.media.matchMedia('(max-width: 600px)');
+    this.setSideNav();
+    this.mobileQuery.addListener(this.mobileQueryListener);
+  }
 
   public closeMenu(): void {
     this.menuTrigger.closeMenu();
@@ -41,6 +60,10 @@ export class FlowComponent implements AfterViewInit {
 
   public onMenuClosed(): void {
     this.contextMenuBtn.style('display', 'none');
+  }
+
+  public onSideNavToggle(): void {
+    this.sideNavOpen = !this.sideNavOpen;
   }
 
   ngAfterViewInit(): void {
@@ -89,8 +112,10 @@ export class FlowComponent implements AfterViewInit {
 
       this.node.attr('transform', (d: FlowNode) => `translate(${d.x},${d.y})`);
     });
+  }
 
-    setTimeout(() => this.notifySvc.showError('Error'), 1000)
+  ngOnDestroy(): void {
+    this.mobileQuery.removeListener(this.mobileQueryListener);
   }
 
   private setupForceLayout(): void {
@@ -149,5 +174,11 @@ export class FlowComponent implements AfterViewInit {
       .style('font', 'normal small-caps 300 16px "Roboto", sans-serif')
       .style('color', 'silver')
       .text((d: FlowNode) => d.name);
+  }
+
+  private setSideNav(): void {
+    this.sideNavFixed = this.mobileQuery.matches;
+    this.sideNavMode = this.mobileQuery.matches ? 'over' : 'side';
+    this.sideNavOpen = !this.mobileQuery.matches;
   }
 }

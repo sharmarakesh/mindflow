@@ -3,6 +3,9 @@
 
 body, html {
   font-family: Roboto, 'Helvetica Neue', sans-serif;
+  font-size: inherit;
+  font-weight: 400;
+  line-height: 1.125; 
   margin: 0;
   padding: 0;
 }
@@ -19,11 +22,18 @@ body, html {
 
 .auth-form {
   background: none;
+  margin-bottom: 5rem;
   max-width: 30rem;
   width: 100%;
 }
 
+.auth-form__button {
+  color: #ffffff!important;
+  width: 100%;
+}
+
 .auth-form__item {
+  margin-bottom: 1rem;
   width: 100%;
 }
 
@@ -54,7 +64,7 @@ body, html {
 
 .auth-form__image {
   display: block;
-  margin: auto;
+  margin: 0 auto;
 }
 
 .auth-form__links {
@@ -63,14 +73,24 @@ body, html {
 }
 
 .auth-form__links a {
-  color: rgb(255, 255, 255);
+  color: #FFC107;
   font-weight: bold;
   cursor: pointer;
   outline: none;
   text-decoration: none;
 }
 
+.auth-form__submit[disabled] {
+  color: rgba(200, 200, 200, .5)!important;
+}
+
+.auth-form__submit {
+  color: #FFC107!important;
+  width: 100%;
+}
+
 .auth-form__title {
+  font-weight: 300;
   text-align: center;
 }
 

@@ -1,3 +1,38 @@
-<p>
-  login works!
-</p>
+<div class="auth-page">
+  <form class="auth-form" [formGroup]="loginForm" (ngSubmit)="login()" novalidate>
+    <img class="auth-form__image" src="assets/icons/firebase_28dp.png" />
+    <h1 class="auth-form__title mat-display-2">Welcome back</h1>
+    <mat-form-field class="auth-form__item">
+      <input formControlName="email" matInput placeholder="Email*" type="email">
+      <mat-error *ngIf="loginForm.controls.email.touched && loginForm.controls.email.errors?.required">
+        <mat-icon>warning</mat-icon> Your email is
+        <strong>required</strong>
+      </mat-error>
+      <mat-error *ngIf="loginForm.invalid && loginForm.controls.email.dirty && loginForm.controls.email.errors?.email">
+        <mat-icon>warning</mat-icon> Please enter a
+        <strong>valid email address</strong>
+      </mat-error>
+    </mat-form-field>
+    <mat-form-field class="auth-form__item">
+      <input formControlName="password" matInput placeholder="Password*" type="password">
+      <mat-error *ngIf="loginForm.controls.password.touched && loginForm.controls.password.errors?.required">
+        <mat-icon>warning</mat-icon> Password is
+        <strong>required</strong>
+      </mat-error>
+      <mat-error *ngIf="loginForm.invalid && loginForm.controls.password.dirty && loginForm.controls.password.errors?.minlength">
+        <mat-icon>warning</mat-icon> Password must be at least
+        <strong>8 characters long</strong>
+      </mat-error>
+    </mat-form-field>
+    <br>
+    <button class="auth-form__submit" color="secondary" [disabled]="loginForm.invalid" mat-button mat-stroked-button type="submit">
+      <span>Login</span>
+    </button>
+    <div class="auth-form__links mat-body">
+      Don't have an account?
+      <a (click)="register()">Sign Up</a>
+      <br /> Forgot your password?
+      <a (click)="forgotPassword()">Reset password</a>
+    </div>
+  </form>
+</div>

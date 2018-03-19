@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { MatDialog, MatDialogRef, MatSnackBar, MatSnackBarRef } from '@angular/material';
 import { LoadingDialogComponent } from './loading-dialog/loading-dialog.component';
+import { NotificationDialogComponent } from './notification-dialog/notification-dialog.component';
 
 @Injectable()
 export class NotificationService {
@@ -30,6 +31,15 @@ export class NotificationService {
     this.loadingDialog = this.dialog.open(LoadingDialogComponent, {
       maxWidth: '256px',
       width: '256px'
+    });
+  }
+
+  public showNotificationDialog(message: string, title: string): MatDialogRef<NotificationDialogComponent> {
+    return this.dialog.open(NotificationDialogComponent, {
+      data: {
+        content: message,
+        title
+      }
     });
   }
 
