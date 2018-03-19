@@ -5,10 +5,7 @@
   width: 100%;
 }
 
-#contextMenuBtn, #contextMenu {
-  display: none;
-  left: 0;
-  right: 0;
+#contextMenuBtn {
   position: absolute;
 }
 

@@ -28,7 +28,9 @@ const NODES: FlowNode[] = [
 })
 export class FlowComponent implements AfterViewInit {
   public mobileQuery: MediaQueryList;
-  private contextMenu: d3.Selection<d3.BaseType, {}, HTMLElement, any>;
+  public sideNavFixed: boolean;
+  public sideNavMode: string;
+  public sideNavOpen: boolean;
   private contextMenuBtn: d3.Selection<d3.BaseType, {}, HTMLElement, any>;
   private link: d3.Selection<d3.BaseType, d3.Group, d3.BaseType, any>;
   @ViewChild(MatMenuTrigger) private menuTrigger: MatMenuTrigger;
@@ -36,9 +38,6 @@ export class FlowComponent implements AfterViewInit {
   private node: d3.Selection<d3.BaseType, d3.Group, d3.BaseType, any>;
   private simulation: d3.Simulation<FlowNode, FlowLink>;
   private svg: d3.Selection<d3.BaseType, {}, HTMLElement, any>;
-  public sideNavFixed: boolean;
-  public sideNavMode: string;
-  public sideNavOpen: boolean;
   constructor(
     private changeDetectorRef: ChangeDetectorRef,
     private flowSvc: FlowService,
@@ -67,7 +66,6 @@ export class FlowComponent implements AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    this.contextMenu = d3.select('#contextMenu');
     this.contextMenuBtn = d3.select('#contextMenuBtn');
     this.svg = d3.select('.flowChart')
       .append('svg')
@@ -79,10 +77,9 @@ export class FlowComponent implements AfterViewInit {
       .on('contextmenu', () => {
         // https://stackblitz.com/edit/angular-odciv8?file=app%2Fmenu-icons-example.ts
         d3.event.preventDefault();
-        this.contextMenu.style('left', `${d3.event.clientX}px`);
-        this.contextMenu.style('top', `${d3.event.clientY}px`);
-        this.contextMenuBtn.style('left', `${d3.event.clientX}px`);
-        this.contextMenuBtn.style('top', `${d3.event.clientY}px`);
+        this.contextMenuBtn.style('display', '');
+        this.contextMenuBtn.style('left', `${d3.event.clientX - 256}px`);
+        this.contextMenuBtn.style('top', `${d3.event.clientY - 64}px`);
         this.menuTrigger.toggleMenu();
       })
       .call(d3.zoom()

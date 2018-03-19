@@ -1,8 +1,8 @@
 <app-toolbar (sideNavToggle)="onSideNavToggle($event)"></app-toolbar>
 <app-sidenav [fixedInViewport]="sideNavFixed" [mode]="sideNavMode" [open]="sideNavOpen">
     <div class="flowChart">
-        <button id="contextMenuBtn" mat-button [matMenuTriggerFor]="menu">Menu</button>
-        <mat-menu id="contextMenu" #menu="matMenu" (close)="onMenuClosed()">
+        <button id="contextMenuBtn" mat-button [matMenuTriggerFor]="menu"></button>
+        <mat-menu #menu="matMenu" (close)="onMenuClosed()">
             <button mat-menu-item (click)="closeMenu()">
                 Close menu
             </button>
