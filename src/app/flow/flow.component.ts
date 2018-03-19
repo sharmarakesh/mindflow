@@ -1,10 +1,15 @@
 import { MediaMatcher } from '@angular/cdk/layout';
 import { AfterViewInit, ChangeDetectorRef, Component, ViewChild } from '@angular/core';
 import { MatMenuTrigger } from '@angular/material'
+import { setTimeout } from 'timers';
+
+import { Subscription } from 'rxjs/Subscription';
+
+import { FirebaseError } from 'firebase/app';
 
 import * as d3 from 'd3';
 
-import { FlowLink, FlowNode } from './models';
+import { Flow, FlowLink, FlowNode } from './models';
 import { FlowService } from './flow.service';
 import { NotificationService } from '../core/notification.service';
 
@@ -27,11 +32,13 @@ const NODES: FlowNode[] = [
   templateUrl: './flow.component.html',
 })
 export class FlowComponent implements AfterViewInit {
+  public flows: Flow[] = [];
   public mobileQuery: MediaQueryList;
   public sideNavFixed: boolean;
   public sideNavMode: string;
   public sideNavOpen: boolean;
   private contextMenuBtn: d3.Selection<d3.BaseType, {}, HTMLElement, any>;
+  private flowSubscription: Subscription;
   private link: d3.Selection<d3.BaseType, d3.Group, d3.BaseType, any>;
   @ViewChild(MatMenuTrigger) private menuTrigger: MatMenuTrigger;
   private mobileQueryListener: () => void;
@@ -75,7 +82,6 @@ export class FlowComponent implements AfterViewInit {
       .attr('width', '100%')
       .attr('height', '100%')
       .on('contextmenu', () => {
-        // https://stackblitz.com/edit/angular-odciv8?file=app%2Fmenu-icons-example.ts
         d3.event.preventDefault();
         this.contextMenuBtn.style('display', '');
         this.contextMenuBtn.style('left', `${d3.event.clientX - 256}px`);
@@ -97,22 +103,43 @@ export class FlowComponent implements AfterViewInit {
 
     const container = this.svg.append('g');
 
-    this.setupForceLayout();
-    this.setupLinks();
-    this.setupNodes();
-
-    this.simulation.on('tick', () => {
-      this.link.attr('x1', (d: FlowLink) => (<FlowNode>d.source).x)
-        .attr('y1', (d: FlowLink) => (<FlowNode>d.source).y)
-        .attr('x2', (d: FlowLink) => (<FlowNode>d.target).x)
-        .attr('y2', (d: FlowLink) => (<FlowNode>d.target).y);
-
-      this.node.attr('transform', (d: FlowNode) => `translate(${d.x},${d.y})`);
-    });
+    setTimeout(() => this.setupFlow(), 10);
   }
 
   ngOnDestroy(): void {
     this.mobileQuery.removeListener(this.mobileQueryListener);
+    this.flowSubscription.unsubscribe();
+  }
+
+  private setSideNav(): void {
+    this.sideNavFixed = this.mobileQuery.matches;
+    this.sideNavMode = this.mobileQuery.matches ? 'over' : 'side';
+    this.sideNavOpen = !this.mobileQuery.matches;
+  }
+
+  private setupFlow(): void {
+    this.notifySvc.showLoading();
+    this.flowSubscription = this.flowSvc.getFlows().subscribe((flows: Flow[]) => {
+      if (!!flows && flows['$value'] !== null) {
+        this.notifySvc.closeLoading();
+        this.flows = [...flows];
+        this.setupForceLayout();
+        this.setupLinks();
+        this.setupNodes();
+
+        this.simulation.on('tick', () => {
+          this.link.attr('x1', (d: FlowLink) => (<FlowNode>d.source).x)
+            .attr('y1', (d: FlowLink) => (<FlowNode>d.source).y)
+            .attr('x2', (d: FlowLink) => (<FlowNode>d.target).x)
+            .attr('y2', (d: FlowLink) => (<FlowNode>d.target).y);
+
+          this.node.attr('transform', (d: FlowNode) => `translate(${d.x},${d.y})`);
+        });
+      }
+    }, (err: FirebaseError) => {
+      this.notifySvc.closeLoading();
+      this.notifySvc.showError(err.message);
+    });
   }
 
   private setupForceLayout(): void {
@@ -171,11 +198,5 @@ export class FlowComponent implements AfterViewInit {
       .style('font', 'normal small-caps 300 16px "Roboto", sans-serif')
       .style('color', 'silver')
       .text((d: FlowNode) => d.name);
-  }
-
-  private setSideNav(): void {
-    this.sideNavFixed = this.mobileQuery.matches;
-    this.sideNavMode = this.mobileQuery.matches ? 'over' : 'side';
-    this.sideNavOpen = !this.mobileQuery.matches;
   }
 }

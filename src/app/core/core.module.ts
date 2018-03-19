@@ -38,7 +38,6 @@ import {
 } from '@angular/material';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
-import { AuthGuard } from './auth-guard.service';
 import { LoadingDialogComponent } from './loading-dialog/loading-dialog.component';
 import { NotificationDialogComponent } from './notification-dialog/notification-dialog.component';
 import { NotificationService } from './notification.service';
@@ -135,7 +134,6 @@ import { ToolbarComponent } from './toolbar/toolbar.component';
     ReactiveFormsModule
   ],
   providers: [
-    AuthGuard,
     NotificationService
   ]
 })

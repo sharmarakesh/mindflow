@@ -5,6 +5,7 @@ import { FirebaseError, User } from 'firebase/app';
 
 @Injectable()
 export class AuthService {
+  public authId: string;
   public redirectUrl: string;
   constructor(private afAuth: AngularFireAuth) { }
 

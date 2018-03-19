@@ -11,7 +11,6 @@ import { Subscription } from 'rxjs/Subscription';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/take';
 
-
 import { AngularFireAuth } from 'angularfire2/auth';
 import { FirebaseError, User } from 'firebase/app';
 
@@ -33,6 +32,7 @@ export class AuthGuard implements CanActivate {
         this.router.navigate(['/register']);
         return false;
       }
+      this.authService.authId = auth.uid;
       return true;
     }).take(1);
   }
