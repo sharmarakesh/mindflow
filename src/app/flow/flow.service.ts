@@ -11,7 +11,7 @@ export class FlowService {
   constructor(
     private authSvc: AuthService,
     private db: AngularFireDatabase
-  ) {}
+  ) { }
 
   public getFlows(): FirebaseListObservable<Flow[]> {
     return this.db.list(`/${this.authSvc.authId}/flows`);
@@ -22,6 +22,13 @@ export class FlowService {
   }
 
   public saveFlow(flow: Flow): Promise<void> | ThenableReference {
+    flow.ideas.forEach((i: FlowIdea) => {
+      for (let key in i) {
+        if (!i[key]) {
+          delete i[key];
+        }
+      }
+    });
     if ('$key' in flow) {
       return this.db.list(`/${this.authSvc.authId}/flows`).update(flow['$key'], flow);
     } else {

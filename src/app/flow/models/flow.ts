@@ -2,8 +2,8 @@ import { FlowConnection, FlowIdea } from '.';
 
 export class Flow {
   constructor(
-    public links: FlowConnection[],
-    public name: string,
-    public nodes: FlowIdea[]
+    public connections: FlowConnection[],
+    public ideas: FlowIdea[],
+    public name: string
   ) { }
 }

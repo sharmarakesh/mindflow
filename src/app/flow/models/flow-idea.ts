@@ -8,6 +8,6 @@ export class FlowIdea {
     public name: string,
     public fx?: number,
     public fy?: number,
-    public data?: any
+    public description?: any
   ) {}
 }

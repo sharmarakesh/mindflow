@@ -98,10 +98,12 @@ body, html {
   color: #BDBDBD!important;
 }
 
-.mat-fab.fab {
-  margin: 1rem;
-  position: absolute!important;
-  z-index: 2;
+.center {
+  justify-content: center;
+}
+
+.column {
+  flex-direction: column;
 }
 
 .fab--bottom-left {
@@ -124,6 +126,14 @@ body, html {
   top: 0;
 }
 
+.flex {
+  display: flex;
+}
+
+.fill-width {
+  width: 100%;
+}
+
 .mat-elevation-z1,
 .mat-elevation-z2,
 .mat-elevation-z3,
@@ -136,10 +146,36 @@ body, html {
   z-index: 2;
 }
 
+.mat-fab.fab {
+  margin: 1rem;
+  position: absolute!important;
+  z-index: 2;
+}
+
+.mb-1 {
+  margin-bottom: 1rem;
+}
+
+.middle {
+  align-items: center;
+}
+
+.mt-1 {
+  margin-top: 1rem;
+}
+
+.row {
+  flex-direction: row;
+}
+
 .snackbar--error {
   color: #ff0000;
 }
 
 .snackbar--info {
   color: #ffff00;
+}
+
+.spacer {
+  flex-grow: 1;
 }

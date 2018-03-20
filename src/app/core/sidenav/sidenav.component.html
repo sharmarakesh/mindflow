@@ -3,14 +3,21 @@
     <mat-nav-list>
       <h3 mat-subheader>Flows</h3>
       <mat-divider></mat-divider>
-      <a *ngFor="let flow of flows" (click)="selectFlow(flow)" mat-list-item>
-        <mat-icon mat-list-icon>share</mat-icon>
-        <h4 mat-line>{{ flow.name }} </h4>
-      </a>
-      <a (click)="addFlow()" mat-list-item>
+      <mat-list-item *ngFor="let flow of flows" class="flex row" (click)="selectFlow(flow)">
+        <mat-icon color="primary" mat-list-icon>share</mat-icon>
+        <h4 mat-line>{{ flow.name }}</h4>
+        <span class="spacer"></span>
+        <button (click)="editFlow(flow)" mat-icon-button>
+          <mat-icon color="primary">create</mat-icon>
+        </button>
+        <button (click)="removeFlow(flow)" mat-icon-button>
+          <mat-icon color="error">delete</mat-icon>
+        </button>
+      </mat-list-item>
+      <mat-list-item (click)="addFlow()">
         <mat-icon class="caption" mat-list-icon>add</mat-icon>
         <h4 class="caption" mat-line>Add flow</h4>
-      </a>
+      </mat-list-item>
     </mat-nav-list>
   </mat-sidenav>
 

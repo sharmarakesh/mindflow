@@ -63,17 +63,8 @@ export class FlowComponent implements AfterViewInit {
     this.mobileQuery.addListener(this.mobileQueryListener);
   }
 
-  public addIdea(): void {
-    const newFlowIdea: FlowIdea = new FlowIdea('', 0, 0, 15, '#FFC107', '');
-    const ideaEditDialog: MatDialogRef<IdeaEditDialogComponent> = this.dialog.open(IdeaEditDialogComponent, {
-      data: {
-        idea: newFlowIdea
-      }
-    })
-  }
-
   public addFlow(): void {
-    const newFlow: Flow = new Flow([], '', []);
+    const newFlow: Flow = new Flow([], [], '');
     const flowEditDialog: MatDialogRef<FlowEditDialogComponent> = this.dialog.open(FlowEditDialogComponent, {
       data: {
         flow: newFlow
@@ -83,6 +74,26 @@ export class FlowComponent implements AfterViewInit {
     flowEditDialog.afterClosed().toPromise().then((flow: Flow) => {
       if (!!flow) {
         this.flowSvc.saveFlow(flow);
+      }
+    })
+  }
+
+  public addIdea(): void {
+    const newFlowIdea: FlowIdea = new FlowIdea('', 0, 0, 30, '#FFC107', '');
+    const ideaEditDialog: MatDialogRef<IdeaEditDialogComponent> = this.dialog.open(IdeaEditDialogComponent, {
+      data: {
+        connections: [],
+        idea: newFlowIdea,
+        ideas: this.flow.ideas
+      }
+    });
+
+    ideaEditDialog.afterClosed().toPromise().then((data: { idea: FlowIdea, connections: FlowConnection[] }) => {
+      if (data) {
+        this.flow.ideas.push(data.idea);
+        this.flow.connections.push(...data.connections);
+        console.log(this.flow)
+        this.flowSvc.saveFlow(this.flow);
       }
     })
   }
@@ -166,8 +177,10 @@ export class FlowComponent implements AfterViewInit {
       if (!!flows && flows['$value'] !== null) {
         this.notifySvc.closeLoading();
         this.flows = [...flows];
-        this.flow = this.flows[0] || new Flow(LINKS, 'Demo', NODES);
-        if (!!this.flow.links && !!this.flow.nodes) {
+        this.flow = this.flows[0] || new Flow([], [], '');
+        this.flow.ideas = this.flow.ideas || [];
+        this.flow.connections = this.flow.connections || [];
+        if (!!this.flow.connections.length && !!this.flow.ideas.length) {
           this.setupForceLayout();
           this.setupLinks();
           this.setupNodes();
@@ -189,9 +202,9 @@ export class FlowComponent implements AfterViewInit {
   }
 
   private setupForceLayout(): void {
-    this.simulation = d3.forceSimulation(this.flow.nodes).alphaDecay(0.01)
+    this.simulation = d3.forceSimulation(this.flow.ideas).alphaDecay(0.01)
       .velocityDecay(0.55)
-      .force('link', d3.forceLink(LINKS)
+      .force('link', d3.forceLink(this.flow.connections)
         .distance((l: FlowConnection) => l.distance)
         .strength((l: FlowConnection) => l.strength)
       )
@@ -201,7 +214,7 @@ export class FlowComponent implements AfterViewInit {
 
   private setupLinks(): void {
     this.link = this.svg.selectAll('line')
-      .data(this.flow.links)
+      .data(this.flow.connections)
       .enter().append('line')
       .attr('stroke', 'rgba(255, 255, 255, .5)')
       .attr('stroke-width', '1px');
@@ -209,7 +222,7 @@ export class FlowComponent implements AfterViewInit {
 
   private setupNodes(): void {
     this.node = this.svg.selectAll('.node')
-      .data(this.flow.nodes)
+      .data(this.flow.ideas)
       .enter().append('g')
       .attr('class', 'node')
       .call(d3.drag()

@@ -37,6 +37,7 @@ import {
   MatTooltipModule,
 } from '@angular/material';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { MccColorPickerModule } from 'material-community-components';
 
 import { LoadingDialogComponent } from './loading-dialog/loading-dialog.component';
 import { NotificationDialogComponent } from './notification-dialog/notification-dialog.component';
@@ -90,6 +91,7 @@ import { ToolbarComponent } from './toolbar/toolbar.component';
     MatTableModule,
     MatTabsModule,
     MatTooltipModule,
+    MccColorPickerModule,
     ReactiveFormsModule,
     SidenavComponent,
     ToolbarComponent
@@ -131,6 +133,7 @@ import { ToolbarComponent } from './toolbar/toolbar.component';
     MatTabsModule,
     MatToolbarModule,
     MatTooltipModule,
+    MccColorPickerModule,
     ReactiveFormsModule
   ],
   providers: [
