@@ -1,5 +1,6 @@
 <app-toolbar (sideNavToggle)="onSideNavToggle($event)"></app-toolbar>
-<app-sidenav [fixedInViewport]="sideNavFixed" [mode]="sideNavMode" [open]="sideNavOpen">
+<app-sidenav (add)="addFlow()" (edit)="editFlow($event)" [fixedInViewport]="sideNavFixed" [flows]="flows" [mode]="sideNavMode"
+    [open]="sideNavOpen" (remove)="removeFlow($event)" (select)="selectFlow($event)">
     <div class="flowChart">
         <button id="contextMenuBtn" mat-button [matMenuTriggerFor]="menu"></button>
         <mat-menu #menu="matMenu" (close)="onMenuClosed()">
@@ -7,5 +8,8 @@
                 Close menu
             </button>
         </mat-menu>
+        <button class="fab fab--bottom-right" (click)="addIdea()" mat-button mat-fab>
+            <mat-icon>lightbulb_outline</mat-icon>
+        </button>
     </div>
 </app-sidenav>

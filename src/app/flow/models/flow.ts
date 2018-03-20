@@ -1,8 +1,9 @@
-import { FlowLink, FlowNode } from '.';
+import { FlowConnection, FlowIdea } from '.';
 
 export class Flow {
   constructor(
-    public links: FlowLink[],
-    public nodes: FlowNode[]
+    public links: FlowConnection[],
+    public name: string,
+    public nodes: FlowIdea[]
   ) { }
 }

@@ -1,4 +1,4 @@
-export class FlowNode {
+export class FlowIdea {
   constructor(
     public id: string | number,
     public x: number,

@@ -12,7 +12,6 @@ import { AppRoutingModule } from './app-routing.module';
 import { CoreModule } from './core/core.module';
 import { environment } from '../environments/environment';
 import { FlowModule } from './flow/flow.module';
-import { FlowEditDialogComponent } from './flows/flow-edit-dialog/flow-edit-dialog.component';
 
 @NgModule({
   imports: [
@@ -26,7 +25,7 @@ import { FlowEditDialogComponent } from './flows/flow-edit-dialog/flow-edit-dial
     CoreModule,
     FlowModule
   ],
-  declarations: [AppComponent, FlowEditDialogComponent],
+  declarations: [AppComponent],
   bootstrap: [AppComponent],
   providers: [AngularFireDatabase]
 })

@@ -4,7 +4,7 @@ import { ThenableReference } from '@firebase/database-types';
 import { AngularFireDatabase, FirebaseListObservable } from 'angularfire2/database-deprecated';
 
 import { AuthService } from '../admin/auth.service';
-import { Flow, FlowLink, FlowNode } from './models';
+import { Flow, FlowConnection, FlowIdea } from './models';
 
 @Injectable()
 export class FlowService {

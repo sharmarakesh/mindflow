@@ -94,6 +94,36 @@ body, html {
   text-align: center;
 }
 
+.caption {
+  color: #BDBDBD!important;
+}
+
+.mat-fab.fab {
+  margin: 1rem;
+  position: absolute!important;
+  z-index: 2;
+}
+
+.fab--bottom-left {
+  bottom: 0;
+  left: 0;
+}
+
+.fab--bottom-right {
+  bottom: 0!important;
+  right: 0!important;
+}
+
+.fab--top-left {
+  left: 0;
+  top: 0;
+}
+
+.fab--top-right {
+  right: 0;
+  top: 0;
+}
+
 .mat-elevation-z1,
 .mat-elevation-z2,
 .mat-elevation-z3,

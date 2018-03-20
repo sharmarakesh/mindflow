@@ -1,7 +1,6 @@
 import { MediaMatcher } from '@angular/cdk/layout';
 import { AfterViewInit, ChangeDetectorRef, Component, ViewChild } from '@angular/core';
-import { MatMenuTrigger } from '@angular/material'
-import { setTimeout } from 'timers';
+import { MatDialog, MatDialogRef, MatMenuTrigger } from '@angular/material'
 
 import { Subscription } from 'rxjs/Subscription';
 
@@ -9,21 +8,23 @@ import { FirebaseError } from 'firebase/app';
 
 import * as d3 from 'd3';
 
-import { Flow, FlowLink, FlowNode } from './models';
+import { Flow, FlowConnection, FlowIdea } from './models';
 import { FlowService } from './flow.service';
 import { NotificationService } from '../core/notification.service';
+import { IdeaEditDialogComponent } from './idea-edit-dialog/idea-edit-dialog.component';
+import { FlowEditDialogComponent } from './flow-edit-dialog/flow-edit-dialog.component';
 
-const LINKS: FlowLink[] = [
-  new FlowLink(0, 1, 50, 0.1),
-  new FlowLink(0, 2, 50, 1),
-  new FlowLink(1, 3, 100, 2)
+const LINKS: FlowConnection[] = [
+  new FlowConnection(0, 1, 50, 0.1),
+  new FlowConnection(0, 2, 50, 1),
+  new FlowConnection(1, 3, 100, 2)
 ];
 
-const NODES: FlowNode[] = [
-  new FlowNode(0, 225, 100, 30, '#FFB300', 'Bob'),
-  new FlowNode(1, 400, 300, 30, '#FFB300', 'Jerry'),
-  new FlowNode(2, 500, 500, 30, '#ffff00', 'John'),
-  new FlowNode(3, 800, 100, 30, '#00ff00', 'George')
+const NODES: FlowIdea[] = [
+  new FlowIdea(0, 225, 100, 30, '#FFB300', 'Bob'),
+  new FlowIdea(1, 400, 300, 30, '#FFB300', 'Jerry'),
+  new FlowIdea(2, 500, 500, 30, '#ffff00', 'John'),
+  new FlowIdea(3, 800, 100, 30, '#00ff00', 'George')
 ];
 
 @Component({
@@ -32,6 +33,7 @@ const NODES: FlowNode[] = [
   templateUrl: './flow.component.html',
 })
 export class FlowComponent implements AfterViewInit {
+  public flow: Flow;
   public flows: Flow[] = [];
   public mobileQuery: MediaQueryList;
   public sideNavFixed: boolean;
@@ -43,10 +45,11 @@ export class FlowComponent implements AfterViewInit {
   @ViewChild(MatMenuTrigger) private menuTrigger: MatMenuTrigger;
   private mobileQueryListener: () => void;
   private node: d3.Selection<d3.BaseType, d3.Group, d3.BaseType, any>;
-  private simulation: d3.Simulation<FlowNode, FlowLink>;
+  private simulation: d3.Simulation<FlowIdea, FlowConnection>;
   private svg: d3.Selection<d3.BaseType, {}, HTMLElement, any>;
   constructor(
     private changeDetectorRef: ChangeDetectorRef,
+    private dialog: MatDialog,
     private flowSvc: FlowService,
     private media: MediaMatcher,
     private notifySvc: NotificationService
@@ -60,8 +63,40 @@ export class FlowComponent implements AfterViewInit {
     this.mobileQuery.addListener(this.mobileQueryListener);
   }
 
+  public addIdea(): void {
+    const newFlowIdea: FlowIdea = new FlowIdea('', 0, 0, 15, '#FFC107', '');
+    const ideaEditDialog: MatDialogRef<IdeaEditDialogComponent> = this.dialog.open(IdeaEditDialogComponent, {
+      data: {
+        idea: newFlowIdea
+      }
+    })
+  }
+
+  public addFlow(): void {
+    const newFlow: Flow = new Flow([], '', []);
+    const flowEditDialog: MatDialogRef<FlowEditDialogComponent> = this.dialog.open(FlowEditDialogComponent, {
+      data: {
+        flow: newFlow
+      }
+    });
+
+    flowEditDialog.afterClosed().toPromise().then((flow: Flow) => {
+      if (!!flow) {
+        this.flowSvc.saveFlow(flow);
+      }
+    })
+  }
+
   public closeMenu(): void {
     this.menuTrigger.closeMenu();
+  }
+
+  public editFlow(flow: Flow): void {
+    const flowEditDialog: MatDialogRef<FlowEditDialogComponent> = this.dialog.open(FlowEditDialogComponent, {
+      data: {
+        flow
+      }
+    });
   }
 
   public onMenuClosed(): void {
@@ -70,6 +105,14 @@ export class FlowComponent implements AfterViewInit {
 
   public onSideNavToggle(): void {
     this.sideNavOpen = !this.sideNavOpen;
+  }
+
+  public removeFlow(flow: Flow): void {
+    this.flowSvc.removeFlow(flow);
+  }
+
+  public selectFlow(flow: Flow): void {
+    this.flow = flow;
   }
 
   ngAfterViewInit(): void {
@@ -123,18 +166,21 @@ export class FlowComponent implements AfterViewInit {
       if (!!flows && flows['$value'] !== null) {
         this.notifySvc.closeLoading();
         this.flows = [...flows];
-        this.setupForceLayout();
-        this.setupLinks();
-        this.setupNodes();
+        this.flow = this.flows[0] || new Flow(LINKS, 'Demo', NODES);
+        if (!!this.flow.links && !!this.flow.nodes) {
+          this.setupForceLayout();
+          this.setupLinks();
+          this.setupNodes();
 
-        this.simulation.on('tick', () => {
-          this.link.attr('x1', (d: FlowLink) => (<FlowNode>d.source).x)
-            .attr('y1', (d: FlowLink) => (<FlowNode>d.source).y)
-            .attr('x2', (d: FlowLink) => (<FlowNode>d.target).x)
-            .attr('y2', (d: FlowLink) => (<FlowNode>d.target).y);
+          this.simulation.on('tick', () => {
+            this.link.attr('x1', (d: FlowConnection) => (<FlowIdea>d.source).x)
+              .attr('y1', (d: FlowConnection) => (<FlowIdea>d.source).y)
+              .attr('x2', (d: FlowConnection) => (<FlowIdea>d.target).x)
+              .attr('y2', (d: FlowConnection) => (<FlowIdea>d.target).y);
 
-          this.node.attr('transform', (d: FlowNode) => `translate(${d.x},${d.y})`);
-        });
+            this.node.attr('transform', (d: FlowIdea) => `translate(${d.x},${d.y})`);
+          });
+        }
       }
     }, (err: FirebaseError) => {
       this.notifySvc.closeLoading();
@@ -143,11 +189,11 @@ export class FlowComponent implements AfterViewInit {
   }
 
   private setupForceLayout(): void {
-    this.simulation = d3.forceSimulation(NODES).alphaDecay(0.01)
+    this.simulation = d3.forceSimulation(this.flow.nodes).alphaDecay(0.01)
       .velocityDecay(0.55)
       .force('link', d3.forceLink(LINKS)
-        .distance((l: FlowLink) => l.distance)
-        .strength((l: FlowLink) => l.strength)
+        .distance((l: FlowConnection) => l.distance)
+        .strength((l: FlowConnection) => l.strength)
       )
       .force('charge', d3.forceManyBody().strength(-100).distanceMin(10000))
       .force('collide', d3.forceCollide(45).strength(1));
@@ -155,7 +201,7 @@ export class FlowComponent implements AfterViewInit {
 
   private setupLinks(): void {
     this.link = this.svg.selectAll('line')
-      .data(LINKS)
+      .data(this.flow.links)
       .enter().append('line')
       .attr('stroke', 'rgba(255, 255, 255, .5)')
       .attr('stroke-width', '1px');
@@ -163,22 +209,22 @@ export class FlowComponent implements AfterViewInit {
 
   private setupNodes(): void {
     this.node = this.svg.selectAll('.node')
-      .data(NODES)
+      .data(this.flow.nodes)
       .enter().append('g')
       .attr('class', 'node')
       .call(d3.drag()
-        .on('start', (d: FlowNode) => {
+        .on('start', (d: FlowIdea) => {
           if (!d3.event.active) {
             this.simulation.alphaTarget(0.3).restart();
           }
           d.fx = d.x;
           d.fy = d.y;
         })
-        .on('drag', (d: FlowNode) => {
+        .on('drag', (d: FlowIdea) => {
           d.fx = d3.event.x;
           d.fy = d3.event.y;
         })
-        .on('end', (d: FlowNode) => {
+        .on('end', (d: FlowIdea) => {
           if (!d3.event.active) {
             this.simulation.alphaTarget(0);
           }
@@ -187,8 +233,8 @@ export class FlowComponent implements AfterViewInit {
         }));
 
     this.node.append('circle')
-      .attr('r', (d: FlowNode) => d.r)
-      .attr('fill', (d: FlowNode) => d3.color(d.color))
+      .attr('r', (d: FlowIdea) => d.r)
+      .attr('fill', (d: FlowIdea) => d3.color(d.color))
       .attr('stroke', '#fff')
       .attr('stroke-width', '2px')
 
@@ -197,6 +243,6 @@ export class FlowComponent implements AfterViewInit {
       .attr('text-anchor', 'middle')
       .style('font', 'normal small-caps 300 16px "Roboto", sans-serif')
       .style('color', 'silver')
-      .text((d: FlowNode) => d.name);
+      .text((d: FlowIdea) => d.name);
   }
 }
