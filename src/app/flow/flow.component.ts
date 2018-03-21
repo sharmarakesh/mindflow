@@ -23,6 +23,7 @@ export class FlowComponent implements AfterViewInit {
   public flow: Flow;
   public flows: Flow[] = [];
   public mobileQuery: MediaQueryList;
+  public selectedIdea: FlowIdea;
   public sideNavFixed: boolean;
   public sideNavMode: string;
   public sideNavOpen: boolean;
@@ -32,6 +33,7 @@ export class FlowComponent implements AfterViewInit {
   @ViewChild(MatMenuTrigger) private menuTrigger: MatMenuTrigger;
   private mobileQueryListener: () => void;
   private node: d3.Selection<d3.BaseType, d3.Group, d3.BaseType, any>;
+  private selectedFlowIdx: number = 0;
   private simulation: d3.Simulation<FlowIdea, FlowConnection>;
   private svg: d3.Selection<d3.BaseType, {}, HTMLElement, any>;
   constructor(
@@ -99,8 +101,30 @@ export class FlowComponent implements AfterViewInit {
     })
   }
 
-  public closeMenu(): void {
-    this.menuTrigger.closeMenu();
+  public editIdea(): void {
+    const ideaEditDialog: MatDialogRef<IdeaEditDialogComponent> = this.dialog.open(IdeaEditDialogComponent, {
+      data: {
+        connections: this.flow.connections.filter((c: FlowConnection) => {
+          if ((<FlowIdea>c.source).index === this.selectedIdea.index || (<FlowIdea>c.target).index === this.selectedIdea.index) {
+            return c;
+          }
+        }),
+        idea: this.selectedIdea,
+        ideas: this.flow.ideas
+      },
+      minWidth: '400px'
+    });
+
+    ideaEditDialog.afterClosed().toPromise().then((data: { idea: FlowIdea, connections: FlowConnection[] }) => {
+      if (data) {
+        this.flow.ideas[data.idea.index] = Object.assign({}, data.idea);
+        data.connections.forEach((c: FlowConnection) => {
+          this.flow.connections[c['index']] = Object.assign({}, c);
+        });
+        this.flowSvc.saveFlow(this.flow);
+      }
+      this.selectedIdea = undefined;
+    })
   }
 
   public editFlow(flow: Flow): void {
@@ -122,14 +146,26 @@ export class FlowComponent implements AfterViewInit {
   public removeFlow(flow: Flow): void {
     if (flow === this.flow) {
       this.flow = new Flow([], [], '');
-      this.svg.selectAll('.node').remove();
-      this.svg.selectAll('line').remove();
     }
     this.flowSvc.removeFlow(flow);
   }
 
-  public selectFlow(flow: Flow): void {
-    this.flow = flow;
+  public removeIdea(): void {
+    const flow: Flow = Object.assign({}, this.flow, { '$key': this.flow['$key'] });
+    flow.ideas.splice(this.selectedIdea.index, 1);
+    flow.connections = [...flow.connections.filter((c: FlowConnection) => {
+      if ((<FlowIdea>c.source).index !== this.selectedIdea.index && (<FlowIdea>c.target).index !== this.selectedIdea.index) {
+        return c;
+      }
+    })];
+    this.selectedIdea = undefined;
+    this.flowSvc.saveFlow(this.flow);
+  }
+
+  public selectFlow(i: number): void {
+    this.selectedFlowIdx = i;
+    this.flow = Object.assign({}, this.flows[i], { '$key': this.flows[i]['$key'] });
+    this.redraw();
   }
 
   ngAfterViewInit(): void {
@@ -141,6 +177,24 @@ export class FlowComponent implements AfterViewInit {
     this.mobileQuery.removeListener(this.mobileQueryListener);
     this.flowSubscription.unsubscribe();
     this.flowSvc.saveFlow(this.flow);
+  }
+
+  private redraw(): void {
+    if (!!this.flow.connections.length && !!this.flow.ideas.length) {
+      this.setupSVG();
+      this.setupForceLayout();
+      this.setupLinks();
+      this.setupNodes();
+
+      this.simulation.on('tick', () => {
+        this.link.attr('x1', (d: FlowConnection) => (<FlowIdea>d.source).x)
+          .attr('y1', (d: FlowConnection) => (<FlowIdea>d.source).y)
+          .attr('x2', (d: FlowConnection) => (<FlowIdea>d.target).x)
+          .attr('y2', (d: FlowConnection) => (<FlowIdea>d.target).y);
+
+        this.node.attr('transform', (d: FlowIdea) => `translate(${d.x},${d.y})`);
+      });
+    }
   }
 
   private setSideNav(): void {
@@ -158,21 +212,10 @@ export class FlowComponent implements AfterViewInit {
       if (!!flows && flows['$value'] !== null) {
         this.notifySvc.closeLoading();
         this.flows = [...flows];
-        this.flow = Object.assign({}, this.flows[0], { '$key': this.flows[0]['$key'] }) || new Flow([], [], '');
-        if (!!this.flow.connections.length && !!this.flow.ideas.length) {
-          this.setupSVG();
-          this.setupForceLayout();
-          this.setupLinks();
-          this.setupNodes();
-
-          this.simulation.on('tick', () => {
-            this.link.attr('x1', (d: FlowConnection) => (<FlowIdea>d.source).x)
-              .attr('y1', (d: FlowConnection) => (<FlowIdea>d.source).y)
-              .attr('x2', (d: FlowConnection) => (<FlowIdea>d.target).x)
-              .attr('y2', (d: FlowConnection) => (<FlowIdea>d.target).y);
-
-            this.node.attr('transform', (d: FlowIdea) => `translate(${d.x},${d.y})`);
-          });
+        if (this.flows.length) {
+          this.selectedFlowIdx = this.selectedFlowIdx >= this.flows.length ? this.flows.length - 1 : this.selectedFlowIdx;
+          this.flow = Object.assign({}, this.flows[this.selectedFlowIdx], { '$key': this.flows[this.selectedFlowIdx]['$key'] }) || new Flow([], [], '');
+          this.redraw();
         }
       }
     }, (err: FirebaseError) => {
@@ -224,7 +267,17 @@ export class FlowComponent implements AfterViewInit {
           delete d.fx;
           delete d.fy;
           this.flowSvc.saveFlow(this.flow);
-        }));
+        })
+      )
+      .on('contextmenu', (d: FlowIdea) => {
+        this.selectedIdea = Object.assign({}, d);
+        d3.event.preventDefault();
+        d3.event.stopPropagation();
+        this.contextMenuBtn.style('display', '');
+        this.contextMenuBtn.style('left', `${d3.event.clientX - 256}px`);
+        this.contextMenuBtn.style('top', `${d3.event.clientY - 64}px`);
+        this.menuTrigger.toggleMenu();
+      })
 
     this.node.append('circle')
       .attr('r', (d: FlowIdea) => d.r)

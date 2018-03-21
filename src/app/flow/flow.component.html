@@ -4,8 +4,14 @@
     <div class="flowChart">
         <button id="contextMenuBtn" mat-button [matMenuTriggerFor]="menu"></button>
         <mat-menu #menu="matMenu" (close)="onMenuClosed()">
-            <button mat-menu-item (click)="addIdea(menu)">
+            <button *ngIf="!selectedIdea" mat-menu-item (click)="addIdea(menu)">
                 Add idea
+            </button>
+            <button *ngIf="selectedIdea" mat-menu-item (click)="editIdea()">
+                Edit idea
+            </button>
+            <button *ngIf="selectedIdea" mat-menu-item (click)="removeIdea()">
+                Remove idea
             </button>
         </mat-menu>
         <button class="fab fab--bottom-right" (click)="addIdea()" mat-button mat-fab>

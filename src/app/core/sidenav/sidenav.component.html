@@ -3,7 +3,7 @@
     <mat-nav-list>
       <h3 mat-subheader>Flows</h3>
       <mat-divider></mat-divider>
-      <mat-list-item *ngFor="let flow of flows" class="flex row" (click)="selectFlow(flow)">
+      <mat-list-item *ngFor="let flow of flows; let i = index" class="flex row" (click)="selectFlow(i)">
         <mat-icon color="primary" mat-list-icon>share</mat-icon>
         <h4 mat-line>{{ flow.name }}</h4>
         <span class="spacer"></span>

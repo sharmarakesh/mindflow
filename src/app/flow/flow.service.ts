@@ -35,7 +35,7 @@ export class FlowService {
 
   private serializeFlow(flow): Flow {
     // Clone the flow
-    const newFlow: Flow = cloneDeep(flow);
+    const newFlow: Flow = Object.assign({}, flow);
 
     // Remove the firebase key
     delete newFlow['$key'];
@@ -51,6 +51,10 @@ export class FlowService {
 
     // Parse the source and target in connections from objects to id's
     newFlow.connections = [...flow.connections.map((c: FlowConnection) => new FlowConnection(c.source.hasOwnProperty('index') ? (<FlowIdea>c.source).index : c.source, c.target.hasOwnProperty('index') ? (<FlowIdea>c.target).index : c.target, c.distance, c.strength))];
+
+    if (newFlow.connections.length > 1 && newFlow.connections[0].source === 0 && newFlow.connections[0].target === 0) {
+      newFlow.connections.splice(0, 1);
+    }
     
     return newFlow;
   }
