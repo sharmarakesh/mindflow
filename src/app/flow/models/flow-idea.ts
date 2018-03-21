@@ -1,6 +1,5 @@
 export class FlowIdea {
   constructor(
-    public id: string | number,
     public x: number,
     public y: number,
     public r: number,
@@ -8,6 +7,9 @@ export class FlowIdea {
     public name: string,
     public fx?: number,
     public fy?: number,
+    public vx?: number,
+    public vy?: number,
+    public index?: number,
     public description?: any
   ) {}
 }

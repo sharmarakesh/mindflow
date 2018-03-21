@@ -23,7 +23,7 @@
     "@angular/platform-browser": "^5.2.0",
     "@angular/platform-browser-dynamic": "^5.2.0",
     "@angular/router": "^5.2.0",
-    "@types/lodash": "^4.14.104",
+    "@types/lodash": "^4.14.105",
     "angularfire2": "^5.0.0-rc.6",
     "core-js": "^2.4.1",
     "d3": "^4.13.0",

@@ -25,16 +25,16 @@ export class IdeaEditDialogComponent {
     this.ideaForm = new FormGroup({
       color: new FormControl(data.idea.color, [Validators.required]),
       description: new FormControl(data.idea.description, [Validators.required]),
-      id: new FormControl(data.idea.id, [Validators.required]),
-      name: new FormControl(data.idea.name, [Validators.required])
+      name: new FormControl(data.idea.name, [Validators.required]),
+      r: new FormControl(data.idea.r, [Validators.required])
     });
 
     this.formSubscription = this.ideaForm.valueChanges.subscribe(
-      (c: { color: string, description: string, id: string, name: string }) => {
+      (c: { color: string, description: string, id: string, name: string, r: number }) => {
         this.idea.color = c.color;
         this.idea.description = c.description;
-        this.idea.id = c.id;
         this.idea.name = c.name;
+        this.idea.r = c.r;
       },
       (err: any) => console.error('Error on form value changes: ', err)
     );
@@ -44,17 +44,22 @@ export class IdeaEditDialogComponent {
     this.connections.push(new FlowConnection('', '', 0, 0));
   }
 
+  public removeConnection(i: number): void {
+    this.connections.splice(i, 1);
+  }
+
   public save(): void {
     if (this.connections.length) {
       this.connections.forEach((c: FlowConnection) => {
-        c.source = this.idea.id;
+        c.source = this.data.ideas.length;
       });
     } else if (!this.data.ideas.length) {
-      this.connections = [new FlowConnection(this.idea.id, this.idea.id, 0, 0)];
+      this.connections = [new FlowConnection(this.data.ideas.length, this.data.ideas.length, 0, 0)];
     }
+
     this.dialogRef.close({
       idea: this.idea,
-      connections: this.connections
+      connections: this.connections.filter((c: FlowConnection) => c.target !== '')
     })
   }
 

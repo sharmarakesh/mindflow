@@ -4,30 +4,25 @@
     <mat-form-field class="mb-1">
       <input formControlName="name" matInput placeholder="Name*" type="text">
       <mat-error *ngIf="ideaForm.controls.name.touched && ideaForm.controls.name.errors?.required">
-        <mat-icon>warning</mat-icon> Idea name is
+        <mat-icon>warning</mat-icon>Idea name is
         <strong>required</strong>
       </mat-error>
     </mat-form-field>
     <mat-form-field class="mb-1">
       <textarea formControlName="description" matInput placeholder="Description*" type="text"></textarea>
       <mat-error *ngIf="ideaForm.controls.description.touched && ideaForm.controls.description.errors?.required">
-        <mat-icon>warning</mat-icon> Description is
+        <mat-icon>warning</mat-icon>Description is
         <strong>required</strong>
       </mat-error>
     </mat-form-field>
-    <mat-form-field class="mb-1">
-      <input formControlName="id" matInput placeholder="Unique flow ID*" type="text">
-      <mat-error *ngIf="ideaForm.controls.id.touched && ideaForm.controls.id.errors?.required">
-        <mat-icon>warning</mat-icon> ID is
-        <strong>required</strong>
-      </mat-error>
-    </mat-form-field>
+    <p>Size</p>
+    <mat-slider formControlName="r" class="fill-width" thumbLabel tickInterval="1" min="1" max="100" step="1"></mat-slider>
     <div class="flex row middle">
       <mat-form-field class="spacer">
         <input #trigger="mccColorPickerOrigin" formControlName="color" matInput mccColorPickerOrigin placeholder="Color*">
       </mat-form-field>
       <mat-error *ngIf="ideaForm.controls.color.touched && ideaForm.controls.color.errors?.required">
-        <mat-icon>warning</mat-icon> Color is
+        <mat-icon>warning</mat-icon>Color is
         <strong>required</strong>
       </mat-error>
       <mcc-color-picker mccConnectedColorPicker [mccConnectedColorPickerOrigin]="trigger"></mcc-color-picker>
@@ -36,22 +31,24 @@
   <mat-list *ngIf="data.ideas && data.ideas.length">
     <h3 mat-subheader>Connections</h3>
     <mat-divider></mat-divider>
-    <mat-list-item *ngFor="let connection of connections; let i = index" class="flex row middle mt-1">
-      <mat-select [ngModel]="connection.target" placeholder="Connections">
-        <mat-option *ngFor="let idea of data.ideas" [value]="idea.id">{{ idea.name }}</mat-option>
+    <div *ngFor="let connection of connections; let i = index" class="flex column fill-width mt-1">
+      <mat-select [(ngModel)]="connection.target" class="fill-width mb-1" placeholder="Target">
+        <mat-option *ngFor="let idea of data.ideas" [value]="idea.index">{{ idea.name }}</mat-option>
       </mat-select>
-      <mat-form-field>
-        <input matInput [ngModel]="connection.distance" placeholder="Distance">
-      </mat-form-field>
-      <mat-form-field>
-        <input matInput [ngModel]="connection.strength" placeholder="Strength">
-      </mat-form-field>
-    </mat-list-item>
+      <p>Distance</p>
+      <mat-slider [(ngModel)]="connection.distance" class="fill-width" thumbLabel tickInterval="1" min="0" max="500" step="50"
+        [value]="connection.distance"></mat-slider>
+      <p>Strength</p>
+      <mat-slider [(ngModel)]="connection.strength" class="fill-width" thumbLabel tickInterval="1" min="0" max="1" step="0.1" [value]="connection.strength"></mat-slider>
+      <button class="fill-width" (click)="removeConnection(i)" color="warn" mat-raised-button>
+        <mat-icon>delete</mat-icon>Remove connection</button>
+      <mat-divider></mat-divider>
+    </div>
     <mat-list-item (click)="addConnection()">
-      <button mat-icon-button>
+      <button [disabled]="connections.length === data.ideas.length" mat-icon-button>
         <mat-icon class="caption" mat-list-icon>add</mat-icon>
       </button>
-      <h4 class="caption" mat-line>Add flow</h4>
+      <h4 class="caption" mat-line>Add connection</h4>
     </mat-list-item>
   </mat-list>
 </mat-dialog-content>

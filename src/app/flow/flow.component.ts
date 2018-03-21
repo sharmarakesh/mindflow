@@ -14,19 +14,6 @@ import { NotificationService } from '../core/notification.service';
 import { IdeaEditDialogComponent } from './idea-edit-dialog/idea-edit-dialog.component';
 import { FlowEditDialogComponent } from './flow-edit-dialog/flow-edit-dialog.component';
 
-const LINKS: FlowConnection[] = [
-  new FlowConnection(0, 1, 50, 0.1),
-  new FlowConnection(0, 2, 50, 1),
-  new FlowConnection(1, 3, 100, 2)
-];
-
-const NODES: FlowIdea[] = [
-  new FlowIdea(0, 225, 100, 30, '#FFB300', 'Bob'),
-  new FlowIdea(1, 400, 300, 30, '#FFB300', 'Jerry'),
-  new FlowIdea(2, 500, 500, 30, '#ffff00', 'John'),
-  new FlowIdea(3, 800, 100, 30, '#00ff00', 'George')
-];
-
 @Component({
   selector: 'flow',
   styleUrls: ['./flow.component.css'],
@@ -64,7 +51,10 @@ export class FlowComponent implements AfterViewInit {
   }
 
   public addFlow(): void {
-    const newFlow: Flow = new Flow([], [], '');
+    const container = d3.select('.flowChart');
+    const width = container.style('width');
+    const height = container.style('height');
+    const newFlow: Flow = new Flow([new FlowConnection(0, 0, 0, 0)], [new FlowIdea(+width.slice(0, width.indexOf('px')) / 2, +height.slice(0, height.indexOf('px')) / 2, 30, '#FFB300', '')], '');
     const flowEditDialog: MatDialogRef<FlowEditDialogComponent> = this.dialog.open(FlowEditDialogComponent, {
       data: {
         flow: newFlow
@@ -73,26 +63,27 @@ export class FlowComponent implements AfterViewInit {
 
     flowEditDialog.afterClosed().toPromise().then((flow: Flow) => {
       if (!!flow) {
+        flow.ideas[0].name = flow.name;
         this.flowSvc.saveFlow(flow);
       }
     })
   }
 
   public addIdea(): void {
-    const newFlowIdea: FlowIdea = new FlowIdea('', 0, 0, 30, '#FFC107', '');
+    const newFlowIdea: FlowIdea = new FlowIdea(0, 0, 50, '#ffd740', '');
     const ideaEditDialog: MatDialogRef<IdeaEditDialogComponent> = this.dialog.open(IdeaEditDialogComponent, {
       data: {
         connections: [],
         idea: newFlowIdea,
         ideas: this.flow.ideas
-      }
+      },
+      minWidth: '400px'
     });
 
     ideaEditDialog.afterClosed().toPromise().then((data: { idea: FlowIdea, connections: FlowConnection[] }) => {
       if (data) {
         this.flow.ideas.push(data.idea);
         this.flow.connections.push(...data.connections);
-        console.log(this.flow)
         this.flowSvc.saveFlow(this.flow);
       }
     })
@@ -119,6 +110,11 @@ export class FlowComponent implements AfterViewInit {
   }
 
   public removeFlow(flow: Flow): void {
+    if (flow === this.flow) {
+      this.flow = new Flow([], [], '');
+      this.svg.selectAll('.node').remove();
+      this.svg.selectAll('line').remove();
+    }
     this.flowSvc.removeFlow(flow);
   }
 
@@ -128,35 +124,6 @@ export class FlowComponent implements AfterViewInit {
 
   ngAfterViewInit(): void {
     this.contextMenuBtn = d3.select('#contextMenuBtn');
-    this.svg = d3.select('.flowChart')
-      .append('svg')
-      .attr('width', '100%')
-      .attr('height', '100%')
-      .append('g')
-      .attr('width', '100%')
-      .attr('height', '100%')
-      .on('contextmenu', () => {
-        d3.event.preventDefault();
-        this.contextMenuBtn.style('display', '');
-        this.contextMenuBtn.style('left', `${d3.event.clientX - 256}px`);
-        this.contextMenuBtn.style('top', `${d3.event.clientY - 64}px`);
-        this.menuTrigger.toggleMenu();
-      })
-      .call(d3.zoom()
-        .on('zoom', () => {
-          this.svg.attr('transform', `translate(${d3.event.transform.x}, ${d3.event.transform.y}) scale(${d3.event.transform.k})`);
-        })
-      );
-
-    const rect = this.svg
-      .append('rect')
-      .attr('width', '100%')
-      .attr('height', '100%')
-      .style('fill', 'none')
-      .style('pointer-events', 'all');
-
-    const container = this.svg.append('g');
-
     setTimeout(() => this.setupFlow(), 10);
   }
 
@@ -173,14 +140,16 @@ export class FlowComponent implements AfterViewInit {
 
   private setupFlow(): void {
     this.notifySvc.showLoading();
+    if (this.flowSubscription) {
+      this.flowSubscription.unsubscribe();
+    }
     this.flowSubscription = this.flowSvc.getFlows().subscribe((flows: Flow[]) => {
       if (!!flows && flows['$value'] !== null) {
         this.notifySvc.closeLoading();
         this.flows = [...flows];
-        this.flow = this.flows[0] || new Flow([], [], '');
-        this.flow.ideas = this.flow.ideas || [];
-        this.flow.connections = this.flow.connections || [];
+        this.flow = Object.assign({}, this.flows[0], { '$key': this.flows[0]['$key'] }) || new Flow([], [], '');
         if (!!this.flow.connections.length && !!this.flow.ideas.length) {
+          this.setupSVG();
           this.setupForceLayout();
           this.setupLinks();
           this.setupNodes();
@@ -204,7 +173,7 @@ export class FlowComponent implements AfterViewInit {
   private setupForceLayout(): void {
     this.simulation = d3.forceSimulation(this.flow.ideas).alphaDecay(0.01)
       .velocityDecay(0.55)
-      .force('link', d3.forceLink(this.flow.connections)
+      .force('link', d3.forceLink(this.flow.connections).id((d: FlowIdea) => d.index)
         .distance((l: FlowConnection) => l.distance)
         .strength((l: FlowConnection) => l.strength)
       )
@@ -257,5 +226,41 @@ export class FlowComponent implements AfterViewInit {
       .style('font', 'normal small-caps 300 16px "Roboto", sans-serif')
       .style('color', 'silver')
       .text((d: FlowIdea) => d.name);
+  }
+
+  private setupSVG(): void {
+    if (this.svg) {
+      this.svg.remove();
+      d3.select('.flowChart').selectAll('*').remove();
+    }
+    this.svg = d3.select('.flowChart')
+      .append('svg')
+      .attr('width', '100%')
+      .attr('height', '100%')
+      .append('g')
+      .attr('width', '100%')
+      .attr('height', '100%')
+      .on('contextmenu', () => {
+        d3.event.preventDefault();
+        this.contextMenuBtn.style('display', '');
+        this.contextMenuBtn.style('left', `${d3.event.clientX - 256}px`);
+        this.contextMenuBtn.style('top', `${d3.event.clientY - 64}px`);
+        this.menuTrigger.toggleMenu();
+      })
+      .call(d3.zoom()
+        .on('zoom', () => {
+          this.svg.attr('transform', `translate(${d3.event.transform.x}, ${d3.event.transform.y}) scale(${d3.event.transform.k})`);
+        })
+      );
+
+    const rect = this.svg
+      .append('rect')
+      .attr('width', '100%')
+      .attr('height', '100%')
+      .style('fill', 'none')
+      .style('pointer-events', 'all');
+
+    const container = this.svg.append('g');
+
   }
 }

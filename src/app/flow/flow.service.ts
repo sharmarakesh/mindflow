@@ -3,6 +3,8 @@ import { Injectable } from '@angular/core';
 import { ThenableReference } from '@firebase/database-types';
 import { AngularFireDatabase, FirebaseListObservable } from 'angularfire2/database-deprecated';
 
+import { cloneDeep } from 'lodash';
+
 import { AuthService } from '../admin/auth.service';
 import { Flow, FlowConnection, FlowIdea } from './models';
 
@@ -22,17 +24,34 @@ export class FlowService {
   }
 
   public saveFlow(flow: Flow): Promise<void> | ThenableReference {
-    flow.ideas.forEach((i: FlowIdea) => {
+    const key: string = flow['$key'];
+    const newFlow: Flow = this.serializeFlow(flow);
+    if (key) {
+      return this.db.list(`/${this.authSvc.authId}/flows`).update(key, newFlow);
+    } else {
+      return this.db.list(`/${this.authSvc.authId}/flows`).push(newFlow);
+    }
+  }
+
+  private serializeFlow(flow): Flow {
+    // Clone the flow
+    const newFlow: Flow = cloneDeep(flow);
+
+    // Remove the firebase key
+    delete newFlow['$key'];
+
+    // Remove undefined or null properties used by d3 from flow ideas
+    newFlow.ideas.forEach((i: FlowIdea) => {
       for (let key in i) {
-        if (!i[key]) {
+        if (i[key] === null || i[key] === undefined) {
           delete i[key];
         }
       }
     });
-    if ('$key' in flow) {
-      return this.db.list(`/${this.authSvc.authId}/flows`).update(flow['$key'], flow);
-    } else {
-      return this.db.list(`/${this.authSvc.authId}/flows`).push(flow);
-    }
+
+    // Parse the source and target in connections from objects to id's
+    newFlow.connections = [...flow.connections.map((c: FlowConnection) => new FlowConnection(c.source.hasOwnProperty('index') ? (<FlowIdea>c.source).index : c.source, c.target.hasOwnProperty('index') ? (<FlowIdea>c.target).index : c.target, c.distance, c.strength))];
+    
+    return newFlow;
   }
 }
