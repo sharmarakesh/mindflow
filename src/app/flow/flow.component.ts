@@ -1,6 +1,6 @@
 import { MediaMatcher } from '@angular/cdk/layout';
 import { AfterViewInit, ChangeDetectorRef, Component, ViewChild } from '@angular/core';
-import { MatDialog, MatDialogRef, MatMenuTrigger } from '@angular/material'
+import { MatDialog, MatDialogRef, MatMenu, MatMenuTrigger } from '@angular/material'
 
 import { Subscription } from 'rxjs/Subscription';
 
@@ -69,8 +69,18 @@ export class FlowComponent implements AfterViewInit {
     })
   }
 
-  public addIdea(): void {
-    const newFlowIdea: FlowIdea = new FlowIdea(0, 0, 50, '#ffd740', '');
+  public addIdea(context?: boolean): void {
+    let newFlowIdea: FlowIdea;
+    if (!context) {
+      const container = d3.select('.flowChart');
+      const width = container.style('width');
+      const height = container.style('height');
+      newFlowIdea = new FlowIdea(+width.slice(0, width.indexOf('px')) / 2, +height.slice(0, height.indexOf('px')) / 2, 50, '#ffd740', '');
+    } else {
+      const x = this.contextMenuBtn.style('left');
+      const y = this.contextMenuBtn.style('top');
+      newFlowIdea = new FlowIdea(+x.slice(0, x.indexOf('px')), +y.slice(0, y.indexOf('px')), 50, '#ffd740', '');
+    }
     const ideaEditDialog: MatDialogRef<IdeaEditDialogComponent> = this.dialog.open(IdeaEditDialogComponent, {
       data: {
         connections: [],
@@ -130,6 +140,7 @@ export class FlowComponent implements AfterViewInit {
   ngOnDestroy(): void {
     this.mobileQuery.removeListener(this.mobileQueryListener);
     this.flowSubscription.unsubscribe();
+    this.flowSvc.saveFlow(this.flow);
   }
 
   private setSideNav(): void {
@@ -212,6 +223,7 @@ export class FlowComponent implements AfterViewInit {
           }
           delete d.fx;
           delete d.fy;
+          this.flowSvc.saveFlow(this.flow);
         }));
 
     this.node.append('circle')
@@ -231,15 +243,21 @@ export class FlowComponent implements AfterViewInit {
   private setupSVG(): void {
     if (this.svg) {
       this.svg.remove();
-      d3.select('.flowChart').selectAll('*').remove();
+      d3.select('.flowChart').selectAll('svg').remove();
     }
     this.svg = d3.select('.flowChart')
-      .append('svg')
+      .append('svg:svg')
       .attr('width', '100%')
       .attr('height', '100%')
-      .append('g')
+      .attr("pointer-events", "all")
+      .append('svg:g')
       .attr('width', '100%')
       .attr('height', '100%')
+      .call(d3.zoom()
+        .on('zoom', () => {
+          this.svg.attr('transform', `translate(${d3.event.transform.x}, ${d3.event.transform.y}) scale(${d3.event.transform.k})`);
+        })
+      )
       .on('contextmenu', () => {
         d3.event.preventDefault();
         this.contextMenuBtn.style('display', '');
@@ -247,20 +265,12 @@ export class FlowComponent implements AfterViewInit {
         this.contextMenuBtn.style('top', `${d3.event.clientY - 64}px`);
         this.menuTrigger.toggleMenu();
       })
-      .call(d3.zoom()
-        .on('zoom', () => {
-          this.svg.attr('transform', `translate(${d3.event.transform.x}, ${d3.event.transform.y}) scale(${d3.event.transform.k})`);
-        })
-      );
+      .append('svg:g');
 
     const rect = this.svg
-      .append('rect')
+      .append('svg:rect')
       .attr('width', '100%')
       .attr('height', '100%')
-      .style('fill', 'none')
-      .style('pointer-events', 'all');
-
-    const container = this.svg.append('g');
-
+      .style('fill', 'none');
   }
 }

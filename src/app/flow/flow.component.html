@@ -4,8 +4,8 @@
     <div class="flowChart">
         <button id="contextMenuBtn" mat-button [matMenuTriggerFor]="menu"></button>
         <mat-menu #menu="matMenu" (close)="onMenuClosed()">
-            <button mat-menu-item (click)="closeMenu()">
-                Close menu
+            <button mat-menu-item (click)="addIdea(menu)">
+                Add idea
             </button>
         </mat-menu>
         <button class="fab fab--bottom-right" (click)="addIdea()" mat-button mat-fab>
