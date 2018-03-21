@@ -1,0 +1,35 @@
+[debug] [2018-03-21T16:29:15.700Z] ----------------------------------------------------------------------
+[debug] [2018-03-21T16:29:15.705Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\razva\AppData\Roaming\npm\node_modules\firebase-tools\bin\firebase deploy
+[debug] [2018-03-21T16:29:15.707Z] CLI Version:   3.16.0
+[debug] [2018-03-21T16:29:15.707Z] Platform:      win32
+[debug] [2018-03-21T16:29:15.707Z] Node Version:  v8.9.3
+[debug] [2018-03-21T16:29:15.709Z] Time:          Wed Mar 21 2018 18:29:15 GMT+0200 (GTB Standard Time)
+[debug] [2018-03-21T16:29:15.709Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2018-03-21T16:29:15.739Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2018-03-21T16:29:15.741Z] > authorizing via signed-in user
+[debug] [2018-03-21T16:29:15.752Z] > refreshing access token with scopes: ["email","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","openid"]
+[debug] [2018-03-21T16:29:15.752Z] >>> HTTP REQUEST POST https://www.googleapis.com/oauth2/v3/token  
+ { refresh_token: '1/c6-7v6RA4jc91fVFX9T8gjnWTH3wLoW5LmMi1jKrAAc',
+  client_id: '563584335869-fgrhgmd47bqnekij5i8b5pr03ho849e6.apps.googleusercontent.com',
+  client_secret: 'j9iVZfS8kkCEFUPaAeJV0sAi',
+  grant_type: 'refresh_token',
+  scope: 'email https://www.googleapis.com/auth/cloud-platform https://www.googleapis.com/auth/cloudplatformprojects.readonly https://www.googleapis.com/auth/firebase openid' } 
+ Wed Mar 21 2018 18:29:15 GMT+0200 (GTB Standard Time)
+[debug] [2018-03-21T16:29:15.993Z] <<< HTTP RESPONSE 200
+[debug] [2018-03-21T16:29:16.002Z] >>> HTTP REQUEST GET https://admin.firebase.com/v1/projects/mindflow-rt  
+  
+ Wed Mar 21 2018 18:29:16 GMT+0200 (GTB Standard Time)
+[debug] [2018-03-21T16:29:16.804Z] <<< HTTP RESPONSE 200
+[debug] [2018-03-21T16:29:16.804Z] >>> HTTP REQUEST GET https://admin.firebase.com/v1/database/mindflow-rt/tokens  
+  
+ Wed Mar 21 2018 18:29:16 GMT+0200 (GTB Standard Time)
+[debug] [2018-03-21T16:29:18.361Z] <<< HTTP RESPONSE 200
+[info] 
+[info] === Deploying to 'mindflow-rt'...
+[info] 
+[info] i  deploying hosting
+[info] i  hosting: preparing dist directory for upload...
+[debug] [2018-03-21T16:29:20.159Z] >>> HTTP REQUEST PUT https://deploy.firebase.com/v1/hosting/mindflow-rt/uploads/-L88OA00a4V_LMWAFqJj?fileCount=13&message=  
+  
+ Wed Mar 21 2018 18:29:20 GMT+0200 (GTB Standard Time)
