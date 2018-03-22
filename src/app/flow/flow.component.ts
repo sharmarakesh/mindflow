@@ -33,9 +33,10 @@ export class FlowComponent implements AfterViewInit {
   @ViewChild(MatMenuTrigger) private menuTrigger: MatMenuTrigger;
   private mobileQueryListener: () => void;
   private node: d3.Selection<d3.BaseType, d3.Group, d3.BaseType, any>;
-  private selectedFlowIdx: number = 0;
+  public selectedFlowIdx: number = 0;
   private simulation: d3.Simulation<FlowIdea, FlowConnection>;
   private svg: d3.Selection<d3.BaseType, {}, HTMLElement, any>;
+  private svgTransform: string = '';
   constructor(
     private changeDetectorRef: ChangeDetectorRef,
     private dialog: MatDialog,
@@ -56,7 +57,7 @@ export class FlowComponent implements AfterViewInit {
     const container = d3.select('.flowChart');
     const width = container.style('width');
     const height = container.style('height');
-    const newFlow: Flow = new Flow([new FlowConnection(0, 0, 0, 0)], [new FlowIdea(+width.slice(0, width.indexOf('px')) / 2, +height.slice(0, height.indexOf('px')) / 2, 30, '#FFB300', '')], '');
+    const newFlow: Flow = new Flow([new FlowConnection(0, 0, 0, 0)], [new FlowIdea(+width.slice(0, width.indexOf('px')) / 2, +height.slice(0, height.indexOf('px')) / 2, 50, '#ffd740', '')], '');
     const flowEditDialog: MatDialogRef<FlowEditDialogComponent> = this.dialog.open(FlowEditDialogComponent, {
       data: {
         flow: newFlow
@@ -94,9 +95,10 @@ export class FlowComponent implements AfterViewInit {
 
     ideaEditDialog.afterClosed().toPromise().then((data: { idea: FlowIdea, connections: FlowConnection[] }) => {
       if (data) {
-        this.flow.ideas.push(data.idea);
-        this.flow.connections.push(...data.connections);
-        this.flowSvc.saveFlow(this.flow);
+        const flow = Object.assign({}, this.flow, { '$key': this.flow['$key'] });
+        flow.ideas.push(data.idea);
+        flow.connections.push(...data.connections);
+        this.flowSvc.saveFlow(flow);
       }
     })
   }
@@ -117,11 +119,12 @@ export class FlowComponent implements AfterViewInit {
 
     ideaEditDialog.afterClosed().toPromise().then((data: { idea: FlowIdea, connections: FlowConnection[] }) => {
       if (data) {
-        this.flow.ideas[data.idea.index] = Object.assign({}, data.idea);
+        const flow = Object.assign({}, this.flow, { '$key': this.flow['$key'] });
+        flow.ideas[data.idea.index] = Object.assign({}, data.idea);
         data.connections.forEach((c: FlowConnection) => {
-          this.flow.connections[c['index']] = Object.assign({}, c);
+          flow.connections[c['index']] = Object.assign({}, c);
         });
-        this.flowSvc.saveFlow(this.flow);
+        this.flowSvc.saveFlow(flow);
       }
       this.selectedIdea = undefined;
     })
@@ -152,14 +155,16 @@ export class FlowComponent implements AfterViewInit {
 
   public removeIdea(): void {
     const flow: Flow = Object.assign({}, this.flow, { '$key': this.flow['$key'] });
-    flow.ideas.splice(this.selectedIdea.index, 1);
-    flow.connections = [...flow.connections.filter((c: FlowConnection) => {
+    flow.connections = [...this.flow.connections.filter((c: FlowConnection) => {
+      debugger;
       if ((<FlowIdea>c.source).index !== this.selectedIdea.index && (<FlowIdea>c.target).index !== this.selectedIdea.index) {
         return c;
       }
     })];
+    console.log(flow.connections);
+    flow.ideas.splice(this.selectedIdea.index, 1);
     this.selectedIdea = undefined;
-    this.flowSvc.saveFlow(this.flow);
+    this.flowSvc.saveFlow(flow);
   }
 
   public selectFlow(i: number): void {
@@ -247,7 +252,7 @@ export class FlowComponent implements AfterViewInit {
     this.node = this.svg.selectAll('.node')
       .data(this.flow.ideas)
       .enter().append('g')
-      .attr('class', 'node')
+      .style('cursor', 'pointer')
       .call(d3.drag()
         .on('start', (d: FlowIdea) => {
           if (!d3.event.active) {
@@ -308,7 +313,8 @@ export class FlowComponent implements AfterViewInit {
       .attr('height', '100%')
       .call(d3.zoom()
         .on('zoom', () => {
-          this.svg.attr('transform', `translate(${d3.event.transform.x}, ${d3.event.transform.y}) scale(${d3.event.transform.k})`);
+          this.svgTransform = `translate(${d3.event.transform.x}, ${d3.event.transform.y}) scale(${d3.event.transform.k})`;
+          this.svg.attr('transform', this.svgTransform);
         })
       )
       .on('contextmenu', () => {
@@ -319,6 +325,8 @@ export class FlowComponent implements AfterViewInit {
         this.menuTrigger.toggleMenu();
       })
       .append('svg:g');
+
+    this.svg.attr('transform', this.svgTransform);
 
     const rect = this.svg
       .append('svg:rect')

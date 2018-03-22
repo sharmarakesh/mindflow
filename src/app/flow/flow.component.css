@@ -8,11 +8,3 @@
 #contextMenuBtn {
   position: absolute;
 }
-
-.node text {
-  font: 12px 'Roboto, sans-serif';
-	color: #fff;
-	text-anchor: middle;
-	font-weight: 300;
-	-webkit-font-smoothing: antialiased;
-}

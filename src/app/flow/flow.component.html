@@ -14,7 +14,7 @@
                 Remove idea
             </button>
         </mat-menu>
-        <button class="fab fab--bottom-right" (click)="addIdea()" mat-button mat-fab>
+        <button *ngIf="flows.length" class="fab fab--bottom-right" (click)="addIdea()" mat-button mat-fab>
             <mat-icon>lightbulb_outline</mat-icon>
         </button>
     </div>

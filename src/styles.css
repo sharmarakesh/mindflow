@@ -22,7 +22,6 @@ body, html {
 
 .auth-form {
   background: none;
-  margin-bottom: 5rem;
   max-width: 30rem;
   width: 100%;
 }
@@ -33,7 +32,7 @@ body, html {
 }
 
 .auth-form__item {
-  margin-bottom: 1rem;
+  margin-bottom: .5rem;
   width: 100%;
 }
 

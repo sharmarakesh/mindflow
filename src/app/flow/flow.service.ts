@@ -43,7 +43,7 @@ export class FlowService {
     // Remove undefined or null properties used by d3 from flow ideas
     newFlow.ideas.forEach((i: FlowIdea) => {
       for (let key in i) {
-        if (i[key] === null || i[key] === undefined) {
+        if (!i[key] && i[key] !== 0) {
           delete i[key];
         }
       }
@@ -52,10 +52,6 @@ export class FlowService {
     // Parse the source and target in connections from objects to id's
     newFlow.connections = [...flow.connections.map((c: FlowConnection) => new FlowConnection(c.source.hasOwnProperty('index') ? (<FlowIdea>c.source).index : c.source, c.target.hasOwnProperty('index') ? (<FlowIdea>c.target).index : c.target, c.distance, c.strength))];
 
-    if (newFlow.connections.length > 1 && newFlow.connections[0].source === 0 && newFlow.connections[0].target === 0) {
-      newFlow.connections.splice(0, 1);
-    }
-    
     return newFlow;
   }
 }
