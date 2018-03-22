@@ -1,5 +1,5 @@
 import { MediaMatcher } from '@angular/cdk/layout';
-import { AfterViewInit, ChangeDetectorRef, Component, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, ViewChild } from '@angular/core';
 import { MatDialog, MatDialogRef, MatMenu, MatMenuTrigger } from '@angular/material'
 
 import { Subscription } from 'rxjs/Subscription';
@@ -7,6 +7,7 @@ import { Subscription } from 'rxjs/Subscription';
 import { FirebaseError } from 'firebase/app';
 
 import * as d3 from 'd3';
+import * as FileSaver from 'file-saver';
 
 import { Flow, FlowConnection, FlowIdea } from './models';
 import { FlowService } from './flow.service';
@@ -20,6 +21,7 @@ import { FlowEditDialogComponent } from './flow-edit-dialog/flow-edit-dialog.com
   templateUrl: './flow.component.html',
 })
 export class FlowComponent implements AfterViewInit {
+  @ViewChild('fileInput') fileInput: ElementRef;
   public flow: Flow;
   public flows: Flow[] = [];
   public mobileQuery: MediaQueryList;
@@ -100,7 +102,7 @@ export class FlowComponent implements AfterViewInit {
         const flow = Object.assign({}, this.flow, { '$key': this.flow['$key'] });
         flow.ideas.push(data.idea);
         flow.connections.push(...data.connections);
-        this.flowSvc.saveFlow(flow);
+        setTimeout(() => this.flowSvc.saveFlow(flow), 10);
       }
     })
   }
@@ -108,12 +110,7 @@ export class FlowComponent implements AfterViewInit {
   public editIdea(): void {
     const ideaEditDialog: MatDialogRef<IdeaEditDialogComponent> = this.dialog.open(IdeaEditDialogComponent, {
       data: {
-        connections: this.flow.connections.filter((c: FlowConnection) => {
-          debugger;
-          if ((<FlowIdea>c.source).index === this.selectedIdea.index || (<FlowIdea>c.target).index === this.selectedIdea.index) {
-            return c;
-          }
-        }),
+        connections: this.flow.connections.filter((c: FlowConnection) => (<FlowIdea>c.source).index === this.selectedIdea.index),
         idea: this.selectedIdea,
         ideas: this.flow.ideas
       },
@@ -129,7 +126,7 @@ export class FlowComponent implements AfterViewInit {
         data.connections.forEach((c: FlowConnection, i: number) => {
           flow.connections[i] = Object.assign({}, c);
         });
-        this.flowSvc.saveFlow(flow);
+        setTimeout(() => this.flowSvc.saveFlow(flow), 10);
       }
     })
   }
@@ -140,6 +137,39 @@ export class FlowComponent implements AfterViewInit {
         flow
       }
     });
+  }
+
+  public exportJSON(): void {
+    const file: File = new File([JSON.stringify(this.flow, null, '\t')], `${this.flow.name}-flow.json`, { type: 'application/json' });
+    FileSaver.default(file);
+  }
+
+  public importFlow(event: any): void {
+    const reader: FileReader = new FileReader();
+    const file: File = event.target.files[0];
+    reader.onload = (readerEvent: Event) => {
+      if (file.type === 'application/json') {
+        try {
+          const flow: Flow = JSON.parse(<string>(readerEvent.target as any).result);
+          this.notifySvc.showLoading();
+          this.flowSvc.saveFlow(flow)
+            .then(() => {
+              this.notifySvc.closeLoading();
+              this.notifySvc.showInfo('Flow uploaded successfully');
+            })
+            .catch((err: FirebaseError) => {
+              this.notifySvc.closeLoading();
+              this.notifySvc.showError(err.message);
+            })
+        } catch (error) {
+          this.notifySvc.showError(error);
+        }
+      } else {
+        this.notifySvc.showInfo('Please upload a JSON file');
+      }
+    };
+
+    reader.readAsText(file);
   }
 
   public onMenuClosed(): void {
@@ -160,20 +190,20 @@ export class FlowComponent implements AfterViewInit {
 
   public removeIdea(): void {
     const flow: Flow = Object.assign({}, this.flow, { '$key': this.flow['$key'] });
-    flow.connections = [...this.flow.connections.filter((c: FlowConnection) => {
-      if ((<FlowIdea>c.source).index !== this.selectedIdea.index && (<FlowIdea>c.target).index !== this.selectedIdea.index) {
-        return c;
-      }
-    })];
+    flow.connections = [...this.flow.connections.filter((c: FlowConnection) => (<FlowIdea>c.source).index !== this.selectedIdea.index && (<FlowIdea>c.target).index !== this.selectedIdea.index)];
     flow.ideas.splice(this.selectedIdea.index, 1);
     this.selectedIdea = undefined;
-    this.flowSvc.saveFlow(flow);
+    setTimeout(() => this.flowSvc.saveFlow(flow), 10);
   }
 
   public selectFlow(i: number): void {
     this.selectedFlowIdx = i;
     this.flow = Object.assign({}, this.flows[i], { '$key': this.flows[i]['$key'] });
     this.redraw();
+  }
+
+  public uploadFlow(): void {
+    this.fileInput.nativeElement.click();
   }
 
   ngAfterViewInit(): void {

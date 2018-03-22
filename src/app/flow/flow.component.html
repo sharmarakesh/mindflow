@@ -2,10 +2,17 @@
 <app-sidenav (add)="addFlow()" (edit)="editFlow($event)" [fixedInViewport]="sideNavFixed" [flows]="flows" [mode]="sideNavMode"
     [open]="sideNavOpen" (remove)="removeFlow($event)" (select)="selectFlow($event)">
     <div class="flowChart">
+        <input type="file" #fileInput style="visibility: hidden; height: 0px" (change)="importFlow($event)" />
         <button id="contextMenuBtn" mat-button [matMenuTriggerFor]="menu"></button>
         <mat-menu #menu="matMenu" (close)="onMenuClosed()">
             <button *ngIf="!selectedIdea" mat-menu-item (click)="addIdea(menu)">
                 Add idea
+            </button>
+            <button *ngIf="!selectedIdea" mat-menu-item (click)="uploadFlow()">
+                Import flow from JSON
+            </button>
+            <button *ngIf="!selectedIdea" mat-menu-item (click)="exportJSON()">
+                Export flow as JSON
             </button>
             <button *ngIf="selectedIdea" mat-menu-item (click)="editIdea()">
                 Edit idea

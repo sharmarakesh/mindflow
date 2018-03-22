@@ -21,7 +21,8 @@ export class IdeaEditDialogComponent {
     public dialogRef: MatDialogRef<IdeaEditDialogComponent>
   ) {
     this.idea = Object.assign({}, data.idea);
-    this.connections = [...data.connections];
+    // Parse the source and target in connections from objects to id's
+    this.connections = [...data.connections.map((c: FlowConnection) => new FlowConnection(c.source.hasOwnProperty('index') ? (<FlowIdea>c.source).index : c.source, c.target.hasOwnProperty('index') ? (<FlowIdea>c.target).index : c.target, c.distance, c.strength))];
     this.ideaForm = new FormGroup({
       color: new FormControl(data.idea.color, [Validators.required]),
       description: new FormControl(data.idea.description, [Validators.required]),

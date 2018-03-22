@@ -7,6 +7,7 @@ import { cloneDeep } from 'lodash';
 
 import { AuthService } from '../admin/auth.service';
 import { Flow, FlowConnection, FlowIdea } from './models';
+import { FirebaseError } from '@firebase/util';
 
 @Injectable()
 export class FlowService {
@@ -23,14 +24,19 @@ export class FlowService {
     return this.db.list(`/${this.authSvc.authId}/flows`).remove(flow['$key']);
   }
 
-  public saveFlow(flow: Flow): Promise<void> | ThenableReference {
-    const key: string = flow['$key'];
-    const newFlow: Flow = this.serializeFlow(flow);
-    if (key) {
-      return this.db.list(`/${this.authSvc.authId}/flows`).update(key, newFlow);
-    } else {
-      return this.db.list(`/${this.authSvc.authId}/flows`).push(newFlow);
-    }
+  public saveFlow(flow: Flow): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const key: string = flow['$key'];
+      const newFlow: Flow = this.serializeFlow(flow);
+      if (key) {
+        this.db.list(`/${this.authSvc.authId}/flows`).update(key, newFlow)
+          .then(() => resolve())
+          .catch((err: FirebaseError) => reject(err));
+      } else {
+        this.db.list(`/${this.authSvc.authId}/flows`).push(newFlow)
+          .then(() => resolve());
+      }
+    });
   }
 
   private serializeFlow(flow): Flow {
