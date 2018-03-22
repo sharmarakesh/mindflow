@@ -273,7 +273,7 @@ export class FlowComponent implements AfterViewInit {
           }
           delete d.fx;
           delete d.fy;
-          this.flowSvc.saveFlow(this.flow);
+          setTimeout(() => this.flowSvc.saveFlow(this.flow), 10);
         })
       )
       .on('contextmenu', (d: FlowIdea) => {
