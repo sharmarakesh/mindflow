@@ -32,7 +32,7 @@
     <h3 mat-subheader>Connections</h3>
     <mat-divider></mat-divider>
     <div *ngFor="let connection of connections; let i = index" class="flex column fill-width mt-1">
-      <mat-select [(ngModel)]="connection.target" class="fill-width mb-1" placeholder="Target">
+      <mat-select class="fill-width mb-1" [(value)]="connection.target" placeholder="Target">
         <mat-option *ngFor="let idea of data.ideas" [value]="idea.index">{{ idea.name }}</mat-option>
       </mat-select>
       <p>Distance</p>

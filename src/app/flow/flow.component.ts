@@ -95,6 +95,8 @@ export class FlowComponent implements AfterViewInit {
 
     ideaEditDialog.afterClosed().toPromise().then((data: { idea: FlowIdea, connections: FlowConnection[] }) => {
       if (data) {
+        this.svg.remove();
+        d3.select('.flowChart').selectAll('svg').remove();
         const flow = Object.assign({}, this.flow, { '$key': this.flow['$key'] });
         flow.ideas.push(data.idea);
         flow.connections.push(...data.connections);
@@ -107,6 +109,7 @@ export class FlowComponent implements AfterViewInit {
     const ideaEditDialog: MatDialogRef<IdeaEditDialogComponent> = this.dialog.open(IdeaEditDialogComponent, {
       data: {
         connections: this.flow.connections.filter((c: FlowConnection) => {
+          debugger;
           if ((<FlowIdea>c.source).index === this.selectedIdea.index || (<FlowIdea>c.target).index === this.selectedIdea.index) {
             return c;
           }
@@ -120,13 +123,14 @@ export class FlowComponent implements AfterViewInit {
     ideaEditDialog.afterClosed().toPromise().then((data: { idea: FlowIdea, connections: FlowConnection[] }) => {
       if (data) {
         const flow = Object.assign({}, this.flow, { '$key': this.flow['$key'] });
+        this.svg.remove();
+        d3.select('.flowChart').selectAll('svg').remove();
         flow.ideas[data.idea.index] = Object.assign({}, data.idea);
-        data.connections.forEach((c: FlowConnection) => {
-          flow.connections[c['index']] = Object.assign({}, c);
+        data.connections.forEach((c: FlowConnection, i: number) => {
+          flow.connections[i] = Object.assign({}, c);
         });
         this.flowSvc.saveFlow(flow);
       }
-      this.selectedIdea = undefined;
     })
   }
 
@@ -140,6 +144,7 @@ export class FlowComponent implements AfterViewInit {
 
   public onMenuClosed(): void {
     this.contextMenuBtn.style('display', 'none');
+    setTimeout(() => this.selectedIdea = undefined, 1000);
   }
 
   public onSideNavToggle(): void {
@@ -156,12 +161,10 @@ export class FlowComponent implements AfterViewInit {
   public removeIdea(): void {
     const flow: Flow = Object.assign({}, this.flow, { '$key': this.flow['$key'] });
     flow.connections = [...this.flow.connections.filter((c: FlowConnection) => {
-      debugger;
       if ((<FlowIdea>c.source).index !== this.selectedIdea.index && (<FlowIdea>c.target).index !== this.selectedIdea.index) {
         return c;
       }
     })];
-    console.log(flow.connections);
     flow.ideas.splice(this.selectedIdea.index, 1);
     this.selectedIdea = undefined;
     this.flowSvc.saveFlow(flow);
@@ -181,7 +184,6 @@ export class FlowComponent implements AfterViewInit {
   ngOnDestroy(): void {
     this.mobileQuery.removeListener(this.mobileQueryListener);
     this.flowSubscription.unsubscribe();
-    this.flowSvc.saveFlow(this.flow);
   }
 
   private redraw(): void {
@@ -277,7 +279,6 @@ export class FlowComponent implements AfterViewInit {
       .on('contextmenu', (d: FlowIdea) => {
         this.selectedIdea = Object.assign({}, d);
         d3.event.preventDefault();
-        d3.event.stopPropagation();
         this.contextMenuBtn.style('display', '');
         this.contextMenuBtn.style('left', `${d3.event.clientX - 256}px`);
         this.contextMenuBtn.style('top', `${d3.event.clientY - 64}px`);
@@ -319,10 +320,13 @@ export class FlowComponent implements AfterViewInit {
       )
       .on('contextmenu', () => {
         d3.event.preventDefault();
-        this.contextMenuBtn.style('display', '');
-        this.contextMenuBtn.style('left', `${d3.event.clientX - 256}px`);
-        this.contextMenuBtn.style('top', `${d3.event.clientY - 64}px`);
-        this.menuTrigger.toggleMenu();
+        if (!this.selectedIdea) {
+          d3.event.stopPropagation();
+          this.contextMenuBtn.style('display', '');
+          this.contextMenuBtn.style('left', `${d3.event.clientX - 256}px`);
+          this.contextMenuBtn.style('top', `${d3.event.clientY - 64}px`);
+          this.menuTrigger.toggleMenu();
+        }
       })
       .append('svg:g');
 

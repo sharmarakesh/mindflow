@@ -20,8 +20,8 @@ export class IdeaEditDialogComponent {
     @Inject(MAT_DIALOG_DATA) public data: { idea: FlowIdea, connections: FlowConnection[], ideas: FlowIdea[] },
     public dialogRef: MatDialogRef<IdeaEditDialogComponent>
   ) {
-    this.idea = data.idea;
-    this.connections = data.connections;
+    this.idea = Object.assign({}, data.idea);
+    this.connections = [...data.connections];
     this.ideaForm = new FormGroup({
       color: new FormControl(data.idea.color, [Validators.required]),
       description: new FormControl(data.idea.description, [Validators.required]),
@@ -51,10 +51,10 @@ export class IdeaEditDialogComponent {
   public save(): void {
     if (this.connections.length) {
       this.connections.forEach((c: FlowConnection) => {
-        c.source = this.data.ideas.length;
+        c.source = this.idea.index || this.data.ideas.length;
       });
     } else if (!this.data.ideas.length) {
-      this.connections = [new FlowConnection(this.data.ideas.length, this.data.ideas.length, 0, 0)];
+      this.connections = [new FlowConnection(this.idea.index || 0, this.idea.index || 0, 0, 0)];
     }
 
     this.dialogRef.close({
