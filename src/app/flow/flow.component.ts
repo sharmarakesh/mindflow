@@ -111,7 +111,7 @@ export class FlowComponent implements AfterViewInit {
   public editIdea(): void {
     const ideaEditDialog: MatDialogRef<IdeaEditDialogComponent> = this.dialog.open(IdeaEditDialogComponent, {
       data: {
-        connections: this.flow.connections.filter((c: FlowConnection) => (<FlowIdea>c.source).index === this.selectedIdea.index),
+        connections: this.flow.connections.filter((c: FlowConnection) => (<FlowIdea>c.source).index === this.selectedIdea.index || (<FlowIdea>c.target).index === this.selectedIdea.index),
         idea: this.selectedIdea,
         ideas: this.flow.ideas
       },

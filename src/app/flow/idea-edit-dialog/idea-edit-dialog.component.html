@@ -36,14 +36,13 @@
     <h3 mat-subheader>Connections</h3>
     <mat-divider></mat-divider>
     <div *ngFor="let connection of connections; let i = index" class="flex column fill-width mt-1">
-      <mat-select class="fill-width mb-1" [(value)]="connection.target" placeholder="Target">
+      <mat-select class="fill-width mb-1" [(value)]="connection.target.index === idea.index ? connection.target : connection.source" placeholder="Target">
         <mat-option *ngFor="let idea of data.ideas" [value]="idea.index">{{ idea.name }}</mat-option>
       </mat-select>
       <p>Distance</p>
-      <mat-slider [(ngModel)]="connection.distance" class="fill-width" thumbLabel tickInterval="1" min="0" max="500" step="50"
-        [value]="connection.distance"></mat-slider>
+      <mat-slider [(ngModel)]="connection.distance" class="fill-width" thumbLabel tickInterval="1" min="0" max="500" step="50"></mat-slider>
       <p>Strength</p>
-      <mat-slider [(ngModel)]="connection.strength" class="fill-width" thumbLabel tickInterval="1" min="0" max="1" step="0.1" [value]="connection.strength"></mat-slider>
+      <mat-slider [(ngModel)]="connection.strength" class="fill-width" thumbLabel tickInterval="1" min="0" max="1" step="0.1"></mat-slider>
       <button class="fill-width" (click)="removeConnection(i)" color="warn" mat-raised-button>
         <mat-icon>delete</mat-icon>Remove connection</button>
       <mat-divider></mat-divider>
