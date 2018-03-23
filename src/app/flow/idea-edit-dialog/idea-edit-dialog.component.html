@@ -7,6 +7,10 @@
         <mat-icon>warning</mat-icon>Idea name is
         <strong>required</strong>
       </mat-error>
+      <mat-error *ngIf="ideaForm.invalid && ideaForm.controls.name.dirty && ideaForm.controls.name.errors?.maxlength">
+        <mat-icon>warning</mat-icon> Idea is 
+        <strong>too long</strong>
+      </mat-error>
     </mat-form-field>
     <mat-form-field class="mb-1">
       <textarea formControlName="description" matInput placeholder="Description*" type="text"></textarea>

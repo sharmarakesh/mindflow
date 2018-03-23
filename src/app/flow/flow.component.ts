@@ -7,6 +7,7 @@ import { Subscription } from 'rxjs/Subscription';
 import { FirebaseError } from 'firebase/app';
 
 import * as d3 from 'd3';
+import * as textWrap from '../../vendors/d3-textWrap.js';
 import * as FileSaver from 'file-saver';
 
 import { Flow, FlowConnection, FlowIdea } from './models';
@@ -123,8 +124,9 @@ export class FlowComponent implements AfterViewInit {
         this.svg.remove();
         d3.select('.flowChart').selectAll('svg').remove();
         flow.ideas[data.idea.index] = Object.assign({}, data.idea);
-        data.connections.forEach((c: FlowConnection, i: number) => {
-          flow.connections[i] = Object.assign({}, c);
+        data.connections.forEach((c: FlowConnection) => {
+          const flowConnectionIdx: number = flow.connections.findIndex((con: FlowConnection) => con['index'] === c['index']);
+          flow.connections[flowConnectionIdx] = Object.assign({}, c);
         });
         setTimeout(() => this.flowSvc.saveFlow(flow), 10);
       }
@@ -222,7 +224,6 @@ export class FlowComponent implements AfterViewInit {
       this.setupForceLayout();
       this.setupLinks();
       this.setupNodes();
-
       this.simulation.on('tick', () => {
         this.link.attr('x1', (d: FlowConnection) => (<FlowIdea>d.source).x)
           .attr('y1', (d: FlowConnection) => (<FlowIdea>d.source).y)
@@ -326,7 +327,10 @@ export class FlowComponent implements AfterViewInit {
       .attr('text-anchor', 'middle')
       .style('font', 'normal small-caps 300 16px "Roboto", sans-serif')
       .style('color', 'silver')
-      .text((d: FlowIdea) => d.name);
+      .text((d: FlowIdea) => d.name)
+
+    this.svg.selectAll('text').call(textWrap.default().bounds({ height: 200, width: 100 }).method('tspans'));
+    this.svg.selectAll('text').select('tspan').attr('dy', '.33em')
   }
 
   private setupSVG(): void {
@@ -338,16 +342,6 @@ export class FlowComponent implements AfterViewInit {
       .append('svg:svg')
       .attr('width', '100%')
       .attr('height', '100%')
-      .attr("pointer-events", "all")
-      .append('svg:g')
-      .attr('width', '100%')
-      .attr('height', '100%')
-      .call(d3.zoom()
-        .on('zoom', () => {
-          this.svgTransform = `translate(${d3.event.transform.x}, ${d3.event.transform.y}) scale(${d3.event.transform.k})`;
-          this.svg.attr('transform', this.svgTransform);
-        })
-      )
       .on('contextmenu', () => {
         d3.event.preventDefault();
         if (!this.selectedIdea) {
@@ -358,6 +352,16 @@ export class FlowComponent implements AfterViewInit {
           this.menuTrigger.toggleMenu();
         }
       })
+      .attr('pointer-events', 'all')
+      .append('svg:g')
+      .attr('width', '100%')
+      .attr('height', '100%')
+      .call(d3.zoom()
+        .on('zoom', () => {
+          this.svgTransform = `translate(${d3.event.transform.x}, ${d3.event.transform.y}) scale(${d3.event.transform.k})`;
+          this.svg.attr('transform', this.svgTransform);
+        })
+      )
       .append('svg:g');
 
     this.svg.attr('transform', this.svgTransform);

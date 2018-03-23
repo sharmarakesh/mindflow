@@ -26,7 +26,7 @@ export class IdeaEditDialogComponent {
     this.ideaForm = new FormGroup({
       color: new FormControl(data.idea.color, [Validators.required]),
       description: new FormControl(data.idea.description, [Validators.required]),
-      name: new FormControl(data.idea.name, [Validators.required]),
+      name: new FormControl(data.idea.name, [Validators.required, Validators.maxLength(50)]),
       r: new FormControl(data.idea.r, [Validators.required])
     });
 
