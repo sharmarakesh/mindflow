@@ -14,7 +14,6 @@ import { FlowIdea, FlowConnection } from '../models';
 export class IdeaEditDialogComponent {
   public connections: FlowConnection[];
   public ideaForm: FormGroup;
-  public ideas: FlowIdea[];
   private idea: FlowIdea;
   private formSubscription: Subscription
   constructor(
@@ -23,8 +22,7 @@ export class IdeaEditDialogComponent {
   ) {
     this.idea = Object.assign({}, data.idea);
     // Parse the source and target in connections from objects to id's
-    this.connections = [...data.connections.map((c: FlowConnection) => new FlowConnection(c.source.hasOwnProperty('index') ? (<FlowIdea>c.source).index : c.source, c.target.hasOwnProperty('index') ? (<FlowIdea>c.target).index : c.target, c.distance, c.strength))];
-    this.ideas = data.ideas.filter((i: FlowIdea) => i.index !== this.idea.index);
+    this.connections = [...data.connections.map((c: FlowConnection) => new FlowConnection((<FlowIdea>c.source).index, (<FlowIdea>c.target).index, c.distance, c.strength))];
     this.ideaForm = new FormGroup({
       color: new FormControl(data.idea.color, [Validators.required]),
       description: new FormControl(data.idea.description, [Validators.required]),
@@ -44,7 +42,7 @@ export class IdeaEditDialogComponent {
   }
 
   public addConnection(): void {
-    this.connections.push(new FlowConnection('', '', 0, 0));
+    this.connections.push(new FlowConnection(this.idea.index || this.data.ideas.length, '', 0, 0));
   }
 
   public removeConnection(i: number): void {
@@ -52,16 +50,6 @@ export class IdeaEditDialogComponent {
   }
 
   public save(): void {
-    if (this.connections.length) {
-      this.connections.forEach((c: FlowConnection) => {
-        if (!c.source) {
-          c.source = this.idea.index || this.data.ideas.length;
-        }
-      });
-    } else if (!this.data.ideas.length) {
-      this.connections = [new FlowConnection(this.idea.index || 0, this.idea.index || 0, 0, 0)];
-    }
-
     this.dialogRef.close({
       idea: this.idea,
       connections: this.connections.filter((c: FlowConnection) => c.target !== '')

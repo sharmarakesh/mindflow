@@ -12,5 +12,5 @@
 </mat-dialog-content>
 <mat-dialog-actions>
   <button mat-button mat-dialog-close>Cancel</button>
-  <button [disabled]="flowForm.invalid" mat-button [mat-dialog-close]="flow">OK</button>
+  <button (click)="save()" [disabled]="flowForm.invalid" mat-button>OK</button>
 </mat-dialog-actions>

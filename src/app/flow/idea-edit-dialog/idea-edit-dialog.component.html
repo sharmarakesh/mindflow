@@ -8,7 +8,7 @@
         <strong>required</strong>
       </mat-error>
       <mat-error *ngIf="ideaForm.invalid && ideaForm.controls.name.dirty && ideaForm.controls.name.errors?.maxlength">
-        <mat-icon>warning</mat-icon> Idea is 
+        <mat-icon>warning</mat-icon> Idea is
         <strong>too long</strong>
       </mat-error>
     </mat-form-field>
@@ -32,12 +32,15 @@
       <mcc-color-picker mccConnectedColorPicker [mccConnectedColorPickerOrigin]="trigger"></mcc-color-picker>
     </div>
   </form>
-  <mat-list *ngIf="ideas && ideas.length">
+  <mat-list>
     <h3 mat-subheader>Connections</h3>
     <mat-divider></mat-divider>
     <div *ngFor="let connection of connections; let i = index" class="flex column fill-width mt-1">
-      <mat-select class="fill-width mb-1" [(ngModel)]="connection.source.index === idea.index ? connection.source : connection.target" placeholder="Target">
-        <mat-option *ngFor="let idea of ideas" [value]="idea.index">{{ idea.name }}</mat-option>
+      <mat-select class="fill-width mb-1" [disabled]="connection.source === idea.index" placeholder="From" [(value)]="connection.source">
+        <mat-option *ngFor="let id of data.ideas" [value]="id.index">{{ id.name }}</mat-option>
+      </mat-select>
+      <mat-select class="fill-width mb-1" [disabled]="connection.target === idea.index" placeholder="To" [(value)]="connection.target">
+        <mat-option *ngFor="let id of data.ideas" [value]="id.index">{{ id.name }}</mat-option>
       </mat-select>
       <p>Distance</p>
       <mat-slider [(ngModel)]="connection.distance" class="fill-width" thumbLabel tickInterval="1" min="0" max="500" step="50"></mat-slider>
@@ -58,5 +61,5 @@
 <mat-dialog-actions class="flex row">
   <span class="spacer"></span>
   <button mat-button mat-dialog-close>Cancel</button>
-  <button (click)="save()" [disabled]="ideaForm.invalid" mat-button [mat-dialog-close]="flow">Done</button>
+  <button (click)="save()" [disabled]="ideaForm.invalid" mat-button>Done</button>
 </mat-dialog-actions>

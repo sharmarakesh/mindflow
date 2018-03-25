@@ -62,17 +62,17 @@ export class FlowComponent implements AfterViewInit {
     const container = d3.select('.flowChart');
     const width = container.style('width');
     const height = container.style('height');
-    const newFlow: Flow = new Flow([new FlowConnection(0, 0, 0, 0)], [new FlowIdea(+width.slice(0, width.indexOf('px')) / 2, +height.slice(0, height.indexOf('px')) / 2, 50, '#ffd740', '')], '');
+    const newFlow: Flow = new Flow([], [new FlowIdea(+width.slice(0, width.indexOf('px')) / 2, +height.slice(0, height.indexOf('px')) / 2, 50, '#ffd740', '')], '');
     const flowEditDialog: MatDialogRef<FlowEditDialogComponent> = this.dialog.open(FlowEditDialogComponent, {
       data: {
         flow: newFlow
       }
     });
 
-    flowEditDialog.afterClosed().toPromise().then((flow: Flow) => {
-      if (!!flow) {
-        flow.ideas[0].name = flow.name;
-        this.flowSvc.saveFlow(flow);
+    flowEditDialog.afterClosed().toPromise().then((data: { flow: Flow} ) => {
+      if (!!data) {
+        data.flow.ideas[0].name = data.flow.name;
+        this.flowSvc.saveFlow(data.flow);
       }
     })
   }
@@ -83,11 +83,11 @@ export class FlowComponent implements AfterViewInit {
       const container = d3.select('.flowChart');
       const width = container.style('width');
       const height = container.style('height');
-      newFlowIdea = new FlowIdea(+width.slice(0, width.indexOf('px')) / 2, +height.slice(0, height.indexOf('px')) / 2, 50, '#ffd740', '');
+      newFlowIdea = new FlowIdea(+width.slice(0, width.indexOf('px')) / 2, +height.slice(0, height.indexOf('px')) / 2, 50, '#ffd740', '', 0, 0, 0, 0, this.flow.ideas.length);
     } else {
       const x = this.contextMenuBtn.style('left');
       const y = this.contextMenuBtn.style('top');
-      newFlowIdea = new FlowIdea(+x.slice(0, x.indexOf('px')), +y.slice(0, y.indexOf('px')), 50, '#ffd740', '');
+      newFlowIdea = new FlowIdea(+x.slice(0, x.indexOf('px')), +y.slice(0, y.indexOf('px')), 50, '#ffd740', '', 0, 0, 0, 0, this.flow.ideas.length);
     }
 
     this.editingIdea = true;
@@ -146,11 +146,17 @@ export class FlowComponent implements AfterViewInit {
         flow
       }
     });
+
+    flowEditDialog.afterClosed().toPromise().then((data: { flow: Flow }) => {
+      if (data) {
+        this.flowSvc.saveFlow(data.flow);
+      }
+    });
   }
 
   public exportJSON(): void {
     const file: File = new File([JSON.stringify(this.flow, null, '\t')], `${this.flow.name}-flow.json`, { type: 'application/json' });
-    FileSaver.default(file);
+    FileSaver.saveAs(file);
   }
 
   public importFlow(event: any): void {
@@ -226,23 +232,21 @@ export class FlowComponent implements AfterViewInit {
   }
 
   private redraw(): void {
-    if (!!this.flow.connections.length && !!this.flow.ideas.length) {
-      this.setupSVG();
-      this.setupForceLayout();
-      this.setupLinks();
-      this.setupNodes();
+    this.setupSVG();
+    this.setupForceLayout();
+    this.setupLinks();
+    this.setupNodes();
 
-      this.simulation.on('tick', () => {
-        if (!this.editingIdea) {
-          this.link.attr('x1', (d: FlowConnection) => (<FlowIdea>d.source).x || 0)
-            .attr('y1', (d: FlowConnection) => (<FlowIdea>d.source).y || 0)
-            .attr('x2', (d: FlowConnection) => (<FlowIdea>d.target).x || 0)
-            .attr('y2', (d: FlowConnection) => (<FlowIdea>d.target).y || 0);
+    this.simulation.on('tick', () => {
+      if (!this.editingIdea) {
+        this.link.attr('x1', (d: FlowConnection) => (<FlowIdea>d.source).x || 0)
+          .attr('y1', (d: FlowConnection) => (<FlowIdea>d.source).y || 0)
+          .attr('x2', (d: FlowConnection) => (<FlowIdea>d.target).x || 0)
+          .attr('y2', (d: FlowConnection) => (<FlowIdea>d.target).y || 0);
 
-          this.node.attr('transform', (d: FlowIdea) => `translate(${d.x || 0},${d.y || 0})`);
-        }
-      });
-    }
+        this.node.attr('transform', (d: FlowIdea) => `translate(${d.x || 0},${d.y || 0})`);
+      }
+    });
   }
 
   private setSideNav(): void {
@@ -260,9 +264,15 @@ export class FlowComponent implements AfterViewInit {
       if (!!flows && flows['$value'] !== null) {
         this.notifySvc.closeLoading();
         this.flows = [...flows];
+        if (this.svg) {
+          this.svg.remove();
+          d3.select('.flowChart').selectAll('svg').remove();
+        }
         if (this.flows.length) {
           this.selectedFlowIdx = this.selectedFlowIdx >= this.flows.length ? this.flows.length - 1 : this.selectedFlowIdx;
           this.flow = Object.assign({}, this.flows[this.selectedFlowIdx], { '$key': this.flows[this.selectedFlowIdx]['$key'] }) || new Flow([], [], '');
+          this.flow.ideas = this.flow.ideas || [];
+          this.flow.connections = this.flow.connections || [];
           this.redraw();
         }
       }
@@ -347,10 +357,6 @@ export class FlowComponent implements AfterViewInit {
   }
 
   private setupSVG(): void {
-    if (this.svg) {
-      this.svg.remove();
-      d3.select('.flowChart').selectAll('svg').remove();
-    }
     this.svg = d3.select('.flowChart')
       .append('svg:svg')
       .attr('width', '100%')

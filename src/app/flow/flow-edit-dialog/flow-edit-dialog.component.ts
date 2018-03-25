@@ -1,6 +1,6 @@
 import { Component, Inject } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { MAT_DIALOG_DATA } from '@angular/material';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material';
 
 import { Subscription } from 'rxjs/Subscription';
 
@@ -15,8 +15,11 @@ export class FlowEditDialogComponent {
   public flowForm: FormGroup;
   private flow: Flow;
   private formSubscription: Subscription
-  constructor(@Inject(MAT_DIALOG_DATA) public data: { flow: Flow }) {
-    this.flow = data.flow;
+  constructor(
+    @Inject(MAT_DIALOG_DATA) public data: { flow: Flow },
+    public dialogRef: MatDialogRef<FlowEditDialogComponent>
+  ) {
+    this.flow = Object.assign({}, data.flow, { '$key': data.flow['$key'] });;
     this.flowForm = new FormGroup({
       name: new FormControl(data.flow.name, [Validators.required])
     });
@@ -27,6 +30,12 @@ export class FlowEditDialogComponent {
       },
       (err: any) => console.error('Error on form value changes: ', err)
     );
+  }
+
+  public save(): void {
+    this.dialogRef.close({
+      flow: this.flow
+    });
   }
 
 }
