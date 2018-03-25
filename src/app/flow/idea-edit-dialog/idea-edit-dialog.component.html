@@ -32,12 +32,12 @@
       <mcc-color-picker mccConnectedColorPicker [mccConnectedColorPickerOrigin]="trigger"></mcc-color-picker>
     </div>
   </form>
-  <mat-list *ngIf="data.ideas && data.ideas.length">
+  <mat-list *ngIf="ideas && ideas.length">
     <h3 mat-subheader>Connections</h3>
     <mat-divider></mat-divider>
     <div *ngFor="let connection of connections; let i = index" class="flex column fill-width mt-1">
-      <mat-select class="fill-width mb-1" [(value)]="connection.target.index === idea.index ? connection.target : connection.source" placeholder="Target">
-        <mat-option *ngFor="let idea of data.ideas" [value]="idea.index">{{ idea.name }}</mat-option>
+      <mat-select class="fill-width mb-1" [(ngModel)]="connection.source.index === idea.index ? connection.source : connection.target" placeholder="Target">
+        <mat-option *ngFor="let idea of ideas" [value]="idea.index">{{ idea.name }}</mat-option>
       </mat-select>
       <p>Distance</p>
       <mat-slider [(ngModel)]="connection.distance" class="fill-width" thumbLabel tickInterval="1" min="0" max="500" step="50"></mat-slider>

@@ -1,7 +1,7 @@
 <div class="auth-page">
   <form class="auth-form" [formGroup]="registrationForm" (ngSubmit)="register()" novalidate>
     <img class="auth-form__image" src="assets/icons/firebase_28dp.png" />
-    <h1 class="auth-form__title mat-display-2">Mindflow RT</h1>
+    <h1 class="auth-form__title m-0 mb-1 mat-display-2">Mindflow RT</h1>
     <mat-form-field class="auth-form__item">
       <input formControlName="name" matInput placeholder="Name*" type="text">
       <mat-error *ngIf="registrationForm.controls.name.touched && registrationForm.controls.name.errors?.required">

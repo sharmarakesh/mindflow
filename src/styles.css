@@ -67,7 +67,7 @@ body, html {
 }
 
 .auth-form__links {
-  margin-top: 3rem;
+  margin-top: 2rem;
   text-align: center;
 }
 
@@ -133,6 +133,11 @@ body, html {
   width: 100%;
 }
 
+.hidden {
+  display: none;
+  position: absolute;
+}
+
 .mat-elevation-z1,
 .mat-elevation-z2,
 .mat-elevation-z3,
@@ -149,6 +154,10 @@ body, html {
   margin: 1rem;
   position: absolute!important;
   z-index: 2;
+}
+
+.m-0 {
+  margin: 0;
 }
 
 .mb-1 {

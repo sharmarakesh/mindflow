@@ -31,6 +31,7 @@ export class FlowComponent implements AfterViewInit {
   public sideNavMode: string;
   public sideNavOpen: boolean;
   private contextMenuBtn: d3.Selection<d3.BaseType, {}, HTMLElement, any>;
+  private editingIdea: boolean = false;
   private flowSubscription: Subscription;
   private link: d3.Selection<d3.BaseType, d3.Group, d3.BaseType, any>;
   @ViewChild(MatMenuTrigger) private menuTrigger: MatMenuTrigger;
@@ -51,6 +52,7 @@ export class FlowComponent implements AfterViewInit {
       this.setSideNav();
       this.changeDetectorRef.detectChanges();
     };
+
     this.mobileQuery = this.media.matchMedia('(max-width: 600px)');
     this.setSideNav();
     this.mobileQuery.addListener(this.mobileQueryListener);
@@ -87,6 +89,8 @@ export class FlowComponent implements AfterViewInit {
       const y = this.contextMenuBtn.style('top');
       newFlowIdea = new FlowIdea(+x.slice(0, x.indexOf('px')), +y.slice(0, y.indexOf('px')), 50, '#ffd740', '');
     }
+
+    this.editingIdea = true;
     const ideaEditDialog: MatDialogRef<IdeaEditDialogComponent> = this.dialog.open(IdeaEditDialogComponent, {
       data: {
         connections: [],
@@ -98,17 +102,17 @@ export class FlowComponent implements AfterViewInit {
 
     ideaEditDialog.afterClosed().toPromise().then((data: { idea: FlowIdea, connections: FlowConnection[] }) => {
       if (data) {
-        this.svg.remove();
-        d3.select('.flowChart').selectAll('svg').remove();
         const flow = Object.assign({}, this.flow, { '$key': this.flow['$key'] });
         flow.ideas.push(data.idea);
         flow.connections.push(...data.connections);
-        setTimeout(() => this.flowSvc.saveFlow(flow), 10);
+        this.flowSvc.saveFlow(flow);
+        this.editingIdea = false;
       }
     })
   }
 
   public editIdea(): void {
+    this.editingIdea = true;
     const ideaEditDialog: MatDialogRef<IdeaEditDialogComponent> = this.dialog.open(IdeaEditDialogComponent, {
       data: {
         connections: this.flow.connections.filter((c: FlowConnection) => (<FlowIdea>c.source).index === this.selectedIdea.index || (<FlowIdea>c.target).index === this.selectedIdea.index),
@@ -121,14 +125,17 @@ export class FlowComponent implements AfterViewInit {
     ideaEditDialog.afterClosed().toPromise().then((data: { idea: FlowIdea, connections: FlowConnection[] }) => {
       if (data) {
         const flow = Object.assign({}, this.flow, { '$key': this.flow['$key'] });
-        this.svg.remove();
-        d3.select('.flowChart').selectAll('svg').remove();
         flow.ideas[data.idea.index] = Object.assign({}, data.idea);
         data.connections.forEach((c: FlowConnection) => {
           const flowConnectionIdx: number = flow.connections.findIndex((con: FlowConnection) => con['index'] === c['index']);
-          flow.connections[flowConnectionIdx] = Object.assign({}, c);
+          if (flowConnectionIdx > -1) {
+            flow.connections[flowConnectionIdx] = Object.assign({}, c);
+          } else {
+            flow.connections.push(c);
+          }
         });
-        setTimeout(() => this.flowSvc.saveFlow(flow), 10);
+        this.flowSvc.saveFlow(flow);
+        this.editingIdea = false;
       }
     })
   }
@@ -195,7 +202,7 @@ export class FlowComponent implements AfterViewInit {
     flow.connections = [...this.flow.connections.filter((c: FlowConnection) => (<FlowIdea>c.source).index !== this.selectedIdea.index && (<FlowIdea>c.target).index !== this.selectedIdea.index)];
     flow.ideas.splice(this.selectedIdea.index, 1);
     this.selectedIdea = undefined;
-    setTimeout(() => this.flowSvc.saveFlow(flow), 10);
+    this.flowSvc.saveFlow(flow);
   }
 
   public selectFlow(i: number): void {
@@ -210,7 +217,7 @@ export class FlowComponent implements AfterViewInit {
 
   ngAfterViewInit(): void {
     this.contextMenuBtn = d3.select('#contextMenuBtn');
-    setTimeout(() => this.setupFlow(), 10);
+    setTimeout(() => this.setupFlow(), 1);
   }
 
   ngOnDestroy(): void {
@@ -224,13 +231,16 @@ export class FlowComponent implements AfterViewInit {
       this.setupForceLayout();
       this.setupLinks();
       this.setupNodes();
-      this.simulation.on('tick', () => {
-        this.link.attr('x1', (d: FlowConnection) => (<FlowIdea>d.source).x)
-          .attr('y1', (d: FlowConnection) => (<FlowIdea>d.source).y)
-          .attr('x2', (d: FlowConnection) => (<FlowIdea>d.target).x)
-          .attr('y2', (d: FlowConnection) => (<FlowIdea>d.target).y);
 
-        this.node.attr('transform', (d: FlowIdea) => `translate(${d.x},${d.y})`);
+      this.simulation.on('tick', () => {
+        if (!this.editingIdea) {
+          this.link.attr('x1', (d: FlowConnection) => (<FlowIdea>d.source).x || 0)
+            .attr('y1', (d: FlowConnection) => (<FlowIdea>d.source).y || 0)
+            .attr('x2', (d: FlowConnection) => (<FlowIdea>d.target).x || 0)
+            .attr('y2', (d: FlowConnection) => (<FlowIdea>d.target).y || 0);
+
+          this.node.attr('transform', (d: FlowIdea) => `translate(${d.x || 0},${d.y || 0})`);
+        }
       });
     }
   }
@@ -243,7 +253,7 @@ export class FlowComponent implements AfterViewInit {
 
   private setupFlow(): void {
     this.notifySvc.showLoading();
-    if (this.flowSubscription) {
+    if (this.flowSubscription && !this.flowSubscription.closed) {
       this.flowSubscription.unsubscribe();
     }
     this.flowSubscription = this.flowSvc.getFlows().subscribe((flows: Flow[]) => {
@@ -263,9 +273,13 @@ export class FlowComponent implements AfterViewInit {
   }
 
   private setupForceLayout(): void {
+    /**
+     * FIXME
+     * Error when assigning vx and vy to primitive (target/source are the indexes) instead of object
+     */
     this.simulation = d3.forceSimulation(this.flow.ideas).alphaDecay(0.01)
       .velocityDecay(0.55)
-      .force('link', d3.forceLink(this.flow.connections).id((d: FlowIdea) => d.index)
+      .force('link', d3.forceLink(this.flow.connections)
         .distance((l: FlowConnection) => l.distance)
         .strength((l: FlowConnection) => l.strength)
       )
@@ -304,7 +318,7 @@ export class FlowComponent implements AfterViewInit {
           }
           delete d.fx;
           delete d.fy;
-          setTimeout(() => this.flowSvc.saveFlow(this.flow), 10);
+          this.flowSvc.saveFlow(this.flow);
         })
       )
       .on('contextmenu', (d: FlowIdea) => {
@@ -323,14 +337,13 @@ export class FlowComponent implements AfterViewInit {
       .attr('stroke-width', '2px')
 
     this.node.append('text')
-      .attr('dy', '.33em')
+      .attr('alignment-baseline', 'middle')
       .attr('text-anchor', 'middle')
       .style('font', 'normal small-caps 300 16px "Roboto", sans-serif')
       .style('color', 'silver')
       .text((d: FlowIdea) => d.name)
 
-    this.svg.selectAll('text').call(textWrap.default().bounds({ height: 200, width: 100 }).method('tspans'));
-    this.svg.selectAll('text').select('tspan').attr('dy', '.33em')
+    this.svg.selectAll('text').call(textWrap.default().bounds({ height: 200, width: 150 }).method('tspans'));
   }
 
   private setupSVG(): void {
