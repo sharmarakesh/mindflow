@@ -72,7 +72,6 @@ export class FlowComponent implements AfterViewInit {
     flowEditDialog.afterClosed().toPromise().then((data: { flow: Flow }) => {
       if (!!data) {
         data.flow.ideas[0].name = data.flow.name;
-        this.clean();
         this.flowSvc.saveFlow(data.flow);
       }
     })
@@ -106,7 +105,6 @@ export class FlowComponent implements AfterViewInit {
         const flow = Object.assign({}, this.flow, { '$key': this.flow['$key'] });
         flow.ideas.push(data.idea);
         flow.connections.push(...data.connections);
-        this.clean();
         this.flowSvc.saveFlow(flow);
         this.editingIdea = false;
       }
@@ -136,7 +134,6 @@ export class FlowComponent implements AfterViewInit {
             flow.connections.push(c);
           }
         });
-        this.clean();
         this.flowSvc.saveFlow(flow);
         this.editingIdea = false;
       }
@@ -152,7 +149,6 @@ export class FlowComponent implements AfterViewInit {
 
     flowEditDialog.afterClosed().toPromise().then((data: { flow: Flow }) => {
       if (data) {
-        this.clean();
         this.flowSvc.saveFlow(data.flow);
       }
     });
@@ -171,7 +167,6 @@ export class FlowComponent implements AfterViewInit {
         try {
           const flow: Flow = JSON.parse(<string>(readerEvent.target as any).result);
           this.notifySvc.showLoading();
-          this.clean();
           this.flowSvc.saveFlow(flow)
             .then(() => {
               this.notifySvc.closeLoading();
@@ -214,14 +209,15 @@ export class FlowComponent implements AfterViewInit {
     flow.connections = [...this.flow.connections.filter((c: FlowConnection) => (<FlowIdea>c.source).index !== this.selectedIdea.index && (<FlowIdea>c.target).index !== this.selectedIdea.index)];
     flow.ideas.splice(this.selectedIdea.index, 1);
     this.selectedIdea = undefined;
-    this.clean();
     this.flowSvc.saveFlow(flow);
   }
 
   public selectFlow(i: number): void {
-    this.clean();
     this.selectedFlowIdx = i;
-    this.flow = Object.assign({}, this.flows[i], { '$key': this.flows[i]['$key'] });
+    this.flow = Object.assign({}, this.flows[this.selectedFlowIdx], { '$key': this.flows[this.selectedFlowIdx]['$key'] }) || new Flow([], [], '');
+    this.flow.ideas = this.flow.ideas || [];
+    this.flow.connections = this.flow.connections || [];
+    this.clean();
     this.redraw();
   }
 
@@ -285,6 +281,7 @@ export class FlowComponent implements AfterViewInit {
           this.flow = Object.assign({}, this.flows[this.selectedFlowIdx], { '$key': this.flows[this.selectedFlowIdx]['$key'] }) || new Flow([], [], '');
           this.flow.ideas = this.flow.ideas || [];
           this.flow.connections = this.flow.connections || [];
+          console.log(this.flow)
           this.redraw();
         }
       }
@@ -307,7 +304,7 @@ export class FlowComponent implements AfterViewInit {
 
   private setupLinks(): void {
     this.link = this.svg.selectAll('line')
-      .data(this.flow.connections)
+      .data([...this.flow.connections])
       .enter().append('line')
       .attr('stroke', 'rgba(255, 255, 255, .5)')
       .attr('stroke-width', '1px');
@@ -315,7 +312,7 @@ export class FlowComponent implements AfterViewInit {
 
   private setupNodes(): void {
     this.node = this.svg.selectAll('.node')
-      .data(this.flow.ideas)
+      .data([...this.flow.ideas])
       .enter().append('g')
       .style('cursor', 'pointer')
       .call(d3.drag()
